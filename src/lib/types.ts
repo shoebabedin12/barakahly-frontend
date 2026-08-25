@@ -1,0 +1,206 @@
+export interface ProductListItem {
+  id: number;
+  name: string;
+  slug: string;
+  sku: string;
+  price: number;
+  discount_price: number | null;
+  in_stock: boolean;
+  stock: number;
+  image: string | null;
+  category: { id: number; name: string } | null;
+  average_rating: number;
+  reviews_count: number;
+  has_variants: boolean;
+}
+
+export interface ProductColor {
+  id: number;
+  name: string;
+  hex_code: string | null;
+}
+
+export interface ProductSize {
+  id: number;
+  name: string;
+}
+
+export interface ProductVariant {
+  id: number;
+  color_id: number | null;
+  size_id: number | null;
+  price: number;
+  discount_price: number | null;
+  stock: number;
+  image: string | null;
+}
+
+export interface ProductReview {
+  id: number;
+  customer_name: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+}
+
+export interface ProductDetail {
+  id: number;
+  name: string;
+  slug: string;
+  sku: string;
+  description: string | null;
+  price: number;
+  discount_price: number | null;
+  stock: number;
+  in_stock: boolean;
+  average_rating: number;
+  reviews_count: number;
+  category: { id: number; name: string } | null;
+  brand: { id: number; name: string } | null;
+  images: string[];
+  colors: ProductColor[];
+  sizes: ProductSize[];
+  variants: ProductVariant[];
+  reviews: ProductReview[];
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string | null;
+  cover_image: string | null;
+}
+
+export interface Banner {
+  id: number;
+  title: string | null;
+  subtitle: string | null;
+  image: string;
+  button_text: string | null;
+  button_link: string | null;
+}
+
+export interface HomeData {
+  banners: Banner[];
+  categories: Category[];
+  featured_products: ProductListItem[];
+  flash_deals: ProductListItem[];
+  best_sellers: ProductListItem[];
+}
+
+export interface Paginated<T> {
+  data: T[];
+  links: {
+    first: string | null;
+    last: string | null;
+    prev: string | null;
+    next: string | null;
+  };
+  meta: {
+    current_page: number;
+    last_page: number;
+    from: number | null;
+    to: number | null;
+    total: number;
+  };
+}
+
+export interface CartItemEntry {
+  id: number;
+  product_id: number;
+  product_variant_id: number | null;
+  name: string;
+  slug: string;
+  variant_color: string | null;
+  variant_size: string | null;
+  image: string | null;
+  unit_price: number;
+  quantity: number;
+  max_stock: number;
+  subtotal: number;
+}
+
+export interface CartResponse {
+  items: CartItemEntry[];
+  subtotal: number;
+  count: number;
+  guest_token: string | null;
+}
+
+export interface PaymentMethod {
+  id: number;
+  name: string;
+  code: string;
+  instructions: string | null;
+}
+
+export interface ShippingZone {
+  id: number;
+  name: string;
+  charge: string;
+}
+
+export interface CheckoutOptions {
+  payment_methods: PaymentMethod[];
+  shipping_zones: ShippingZone[];
+}
+
+export interface OrderItem {
+  id: number;
+  product_id: number | null;
+  product_name: string;
+  variant_color: string | null;
+  variant_size: string | null;
+  price: number;
+  quantity: number;
+  subtotal: number;
+  image: string | null;
+}
+
+export interface Order {
+  id: number;
+  order_number: string;
+  subtotal: number;
+  shipping_charge: number;
+  discount_amount: number;
+  total_amount: number;
+  payment_method: string;
+  payment_status: string;
+  order_status: string;
+  shipping_address: string;
+  created_at: string;
+  items: OrderItem[];
+}
+
+export interface Settings {
+  site_name: string;
+  site_logo: string | null;
+  site_favicon: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  address: string | null;
+  shipping_charge: number;
+  currency: string;
+  facebook: string | null;
+  instagram: string | null;
+  youtube: string | null;
+  whatsapp: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  flash_deal_ends_at: string | null;
+  maintenance_mode: boolean;
+}
+
+export interface Customer {
+  id: number;
+  name: string;
+  phone: string;
+  email: string | null;
+  address: string | null;
+}
+
+export interface ApiErrorBody {
+  message: string;
+  errors?: Record<string, string[]>;
+}
