@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { CategoryCarousel } from "@/components/CategoryCarousel";
 import { ProductCard } from "@/components/ProductCard";
 import { getHome } from "@/lib/queries";
 import type { ProductListItem } from "@/lib/types";
@@ -8,7 +9,7 @@ function ProductSection({ title, products }: { title: string; products: ProductL
   if (products.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-8">
+    <section className="mx-auto max-w-[100rem] px-3 py-4">
       <h2 className="mb-4 text-xl font-semibold text-dark">{title}</h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {products.map((product) => (
@@ -25,7 +26,7 @@ export default async function HomePage() {
   return (
     <div>
       {home.banners.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 pt-6">
+        <section className="mx-auto max-w-[100rem] px-3 pt-4">
           <div className="overflow-hidden rounded-2xl">
             {home.banners.slice(0, 1).map((banner) => (
               <Link key={banner.id} href={banner.button_link ?? "/products"} className="block">
@@ -48,24 +49,18 @@ export default async function HomePage() {
       )}
 
       {home.categories.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 py-8">
-          <h2 className="mb-4 text-xl font-semibold text-dark">Shop by category</h2>
-          <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-8">
-            {home.categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/products?category=${category.id}`}
-                className="flex flex-col items-center gap-2 rounded-xl border border-black/10 p-3 text-center hover:border-primary dark:border-white/10"
-              >
-                <div className="relative h-16 w-16 overflow-hidden rounded-full bg-black/5 dark:bg-white/5">
-                  {category.cover_image && (
-                    <Image src={category.cover_image} alt={category.name} fill className="object-cover" />
-                  )}
-                </div>
-                <span className="line-clamp-1 text-xs font-medium">{category.name}</span>
-              </Link>
-            ))}
+        <section className="mx-auto max-w-[100rem] px-3 py-4">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-dark sm:text-3xl">Shop by Category</h2>
+            <Link
+              href="/products"
+              className="text-sm font-medium text-primary underline underline-offset-4 hover:text-primary/80"
+            >
+              Explore All
+            </Link>
           </div>
+
+          <CategoryCarousel categories={home.categories} />
         </section>
       )}
 

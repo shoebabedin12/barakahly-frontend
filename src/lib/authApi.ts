@@ -1,6 +1,6 @@
 "use client";
 
-import { apiPost } from "./api";
+import { apiPatch, apiPost } from "./api";
 import { clearGuestToken, getGuestToken, setToken } from "./auth";
 import type { Customer } from "./types";
 
@@ -47,4 +47,27 @@ export async function register(payload: RegisterPayload) {
 export async function logout() {
   await apiPost("/api/v1/auth/logout");
   setToken(null);
+}
+
+export interface ProfilePayload {
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  city?: string;
+}
+
+export async function updateProfile(payload: ProfilePayload) {
+  const response = await apiPatch<{ customer: Customer }>("/api/v1/auth/profile", { ...payload });
+  return response.customer;
+}
+
+export interface PasswordPayload {
+  current_password: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export function updatePassword(payload: PasswordPayload) {
+  return apiPatch<{ message: string }>("/api/v1/auth/password", { ...payload });
 }

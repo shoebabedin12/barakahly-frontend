@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { IconCheckCircle } from "@/components/icons";
 import { ApiError } from "@/lib/api";
 import { getOrder } from "@/lib/queries";
 import type { Order } from "@/lib/types";
@@ -17,7 +17,7 @@ const PAYMENT_BANNERS: Record<string, { tone: "success" | "danger"; message: str
 
 export default function OrderSuccessPage() {
   return (
-    <Suspense fallback={<p className="mx-auto max-w-2xl px-4 py-16 text-center text-dark/60">Loading your order...</p>}>
+    <Suspense fallback={<p className="mx-auto max-w-lg px-4 py-16 text-center text-dark/60">Loading your order...</p>}>
       <OrderSuccessContent />
     </Suspense>
   );
@@ -41,7 +41,7 @@ function OrderSuccessContent() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+      <div className="mx-auto max-w-lg px-5 py-20 text-center">
         <p className="text-danger">{error}</p>
         <Link href="/" className="mt-4 inline-block rounded-full bg-primary px-6 py-3 text-sm font-semibold text-background">
           Back to home
@@ -51,14 +51,14 @@ function OrderSuccessContent() {
   }
 
   if (!order) {
-    return <p className="mx-auto max-w-2xl px-4 py-16 text-center text-dark/60">Loading your order...</p>;
+    return <p className="mx-auto max-w-lg px-4 py-16 text-center text-dark/60">Loading your order...</p>;
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
+    <div className="mx-auto max-w-lg px-5 py-20 text-center">
       {banner && (
         <div
-          className={`mb-6 rounded-lg p-3 text-sm font-medium ${
+          className={`mb-6 rounded-lg p-3 text-left text-sm font-medium ${
             banner.tone === "success" ? "bg-success/15 text-success" : "bg-danger/15 text-danger"
           }`}
         >
@@ -66,62 +66,44 @@ function OrderSuccessContent() {
         </div>
       )}
 
-      <div className="rounded-xl border border-black/10 p-6 text-center dark:border-white/10">
-        <p className="text-3xl">&#10003;</p>
-        <h1 className="mt-2 text-xl font-semibold text-dark">Thank you for your order!</h1>
-        <p className="mt-1 text-sm text-dark/60">Order #{order.order_number}</p>
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10 text-success">
+        <IconCheckCircle className="h-9 w-9" />
       </div>
 
-      <div className="mt-6 flex flex-col gap-3">
-        {order.items.map((item) => (
-          <div key={item.id} className="flex gap-4 rounded-xl border border-black/10 p-3 dark:border-white/10">
-            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-black/5 dark:bg-white/5">
-              {item.image && <Image src={item.image} alt={item.product_name} fill className="object-cover" />}
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-dark">{item.product_name}</p>
-              {(item.variant_color || item.variant_size) && (
-                <p className="text-xs text-dark/60">
-                  {[item.variant_color, item.variant_size].filter(Boolean).join(" / ")}
-                </p>
-              )}
-              <p className="text-xs text-dark/60">Qty {item.quantity}</p>
-            </div>
-            <p className="text-sm font-semibold text-primary">{item.subtotal.toFixed(0)} &#2547;</p>
-          </div>
-        ))}
-      </div>
+      <h1 className="mt-6 text-2xl font-bold text-dark sm:text-3xl">Thank You For Your Order!</h1>
+      <p className="mt-3 text-dark/60">Your order has been placed successfully. We&apos;ll be in touch soon.</p>
 
-      <div className="mt-6 rounded-xl border border-black/10 p-4 text-sm dark:border-white/10">
+      <div className="mt-8 space-y-4 rounded-2xl border border-black/10 p-6 text-left dark:border-white/10">
         <div className="flex items-center justify-between">
-          <span>Subtotal</span>
-          <span>{order.subtotal.toFixed(0)} &#2547;</span>
+          <span className="text-sm text-dark/60">Order Number</span>
+          <span className="font-semibold text-dark">{order.order_number}</span>
         </div>
-        <div className="mt-1 flex items-center justify-between">
-          <span>Shipping</span>
-          <span>{order.shipping_charge.toFixed(0)} &#2547;</span>
+
+        <div className="flex items-center justify-between border-t border-black/10 pt-4 dark:border-white/10">
+          <span className="text-sm text-dark/60">Total Amount</span>
+          <span className="font-semibold text-dark">{order.total_amount.toFixed(0)} &#2547;</span>
         </div>
-        {order.discount_amount > 0 && (
-          <div className="mt-1 flex items-center justify-between text-success">
-            <span>Discount</span>
-            <span>-{order.discount_amount.toFixed(0)} &#2547;</span>
-          </div>
-        )}
-        <div className="mt-2 flex items-center justify-between border-t border-black/10 pt-2 text-base font-semibold dark:border-white/10">
-          <span>Total</span>
-          <span>{order.total_amount.toFixed(0)} &#2547;</span>
+
+        <div className="flex items-center justify-between border-t border-black/10 pt-4 dark:border-white/10">
+          <span className="text-sm text-dark/60">Order Status</span>
+          <span className="rounded-full bg-secondary/15 px-3 py-1 text-xs font-semibold capitalize text-dark">
+            {order.order_status}
+          </span>
         </div>
-        <p className="mt-3 text-dark/60">
-          Payment: {order.payment_method} &middot; {order.payment_status}
-        </p>
-        <p className="text-dark/60">Shipping to: {order.shipping_address}</p>
+
+        <div className="flex items-center justify-between border-t border-black/10 pt-4 dark:border-white/10">
+          <span className="text-sm text-dark/60">Payment</span>
+          <span className="text-right text-sm font-medium capitalize text-dark">
+            {order.payment_status} ({order.payment_method})
+          </span>
+        </div>
       </div>
 
       <Link
         href="/products"
-        className="mt-6 block rounded-full bg-primary px-6 py-3 text-center text-sm font-semibold text-background"
+        className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-8 py-3.5 text-sm font-semibold text-background transition hover:opacity-90"
       >
-        Continue shopping
+        Continue Shopping
       </Link>
     </div>
   );

@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/components/AuthProvider";
+import { CartDrawer } from "@/components/CartDrawer";
 import { CartProvider } from "@/components/CartProvider";
+import { ThemeProvider, THEME_INIT_SCRIPT } from "@/components/ThemeProvider";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { getSettings } from "@/lib/queries";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { QuickViewDrawer } from "@/components/QuickViewDrawer";
+import { QuickViewProvider } from "@/components/QuickViewProvider";
+import { getCategories, getSettings } from "@/lib/queries";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -24,16 +30,33 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const settings = await getSettings().catch(() => null);
+  const [settings, categories] = await Promise.all([
+    getSettings().catch(() => null),
+    getCategories().catch(() => []),
+  ]);
 
   return (
     <html lang="en" className={`${plusJakartaSans.variable} h-full antialiased`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="flex min-h-full flex-col bg-background text-dark">
-        <CartProvider>
-          <Header siteName={settings?.site_name ?? "Barakahly"} logo={settings?.site_logo ?? null} />
-          <main className="flex-1">{children}</main>
-          <Footer settings={settings} />
-        </CartProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <CartProvider>
+              <QuickViewProvider>
+                <Header settings={settings} categories={categories} />
+                <main className="flex-1">{children}</main>
+                <div className="pb-16 sm:pb-0">
+                  <Footer settings={settings} categories={categories} />
+                </div>
+                <MobileBottomNav />
+                <CartDrawer />
+                <QuickViewDrawer />
+              </QuickViewProvider>
+            </CartProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

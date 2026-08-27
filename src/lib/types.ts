@@ -12,6 +12,7 @@ export interface ProductListItem {
   average_rating: number;
   reviews_count: number;
   has_variants: boolean;
+  colors_count: number;
 }
 
 export interface ProductColor {
@@ -72,6 +73,11 @@ export interface Category {
   cover_image: string | null;
 }
 
+export interface Brand {
+  id: number;
+  name: string;
+}
+
 export interface Banner {
   id: number;
   title: string | null;
@@ -106,16 +112,22 @@ export interface Paginated<T> {
   };
 }
 
+export interface ProductsResult extends Paginated<ProductListItem> {
+  price_range: { min: number; max: number };
+}
+
 export interface CartItemEntry {
   id: number;
   product_id: number;
   product_variant_id: number | null;
   name: string;
   slug: string;
+  sku: string;
   variant_color: string | null;
   variant_size: string | null;
   image: string | null;
   unit_price: number;
+  original_price: number | null;
   quantity: number;
   max_stock: number;
   subtotal: number;
@@ -198,9 +210,36 @@ export interface Customer {
   phone: string;
   email: string | null;
   address: string | null;
+  city: string | null;
+  total_spent: number;
+  orders_count: number;
+  wishlist_count: number;
 }
 
 export interface ApiErrorBody {
   message: string;
   errors?: Record<string, string[]>;
+}
+
+export interface SearchSuggestion {
+  name: string;
+  slug: string;
+  image: string | null;
+  price: string;
+}
+
+export interface BlogPostSummary {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  featured_image: string | null;
+  published_at: string | null;
+}
+
+export interface BlogPostDetail extends BlogPostSummary {
+  content: string;
+  meta_title: string | null;
+  meta_description: string | null;
+  related_posts: BlogPostSummary[];
 }

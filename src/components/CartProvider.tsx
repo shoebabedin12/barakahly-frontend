@@ -8,6 +8,9 @@ interface CartContextValue {
   cart: CartResponse | null;
   loading: boolean;
   refreshCart: () => Promise<void>;
+  isDrawerOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -15,6 +18,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const refreshCart = useCallback(async () => {
     try {
@@ -32,8 +36,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     refreshCart();
   }, [refreshCart]);
 
+  const openCart = useCallback(() => setIsDrawerOpen(true), []);
+  const closeCart = useCallback(() => setIsDrawerOpen(false), []);
+
   return (
-    <CartContext.Provider value={{ cart, loading, refreshCart }}>{children}</CartContext.Provider>
+    <CartContext.Provider value={{ cart, loading, refreshCart, isDrawerOpen, openCart, closeCart }}>
+      {children}
+    </CartContext.Provider>
   );
 }
 

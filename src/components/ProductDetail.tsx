@@ -1,14 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCart } from "./CartProvider";
 import { addToCart } from "@/lib/cart";
 import { ApiError } from "@/lib/api";
+import { recordRecentlyViewed } from "@/lib/recentlyViewed";
 import type { ProductDetail as ProductDetailType } from "@/lib/types";
 
 export function ProductDetail({ product }: { product: ProductDetailType }) {
-  const { refreshCart } = useCart();
+  const { refreshCart, openCart } = useCart();
+
+  useEffect(() => {
+    recordRecentlyViewed(product.slug);
+  }, [product.slug]);
+
   const [colorId, setColorId] = useState<number | null>(product.colors[0]?.id ?? null);
   const [sizeId, setSizeId] = useState<number | null>(product.sizes[0]?.id ?? null);
   const [quantity, setQuantity] = useState(1);
@@ -44,6 +50,7 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
       await addToCart(product.id, selectedVariant?.id, quantity);
       await refreshCart();
       setStatus({ type: "success", message: "Added to cart." });
+      openCart();
     } catch (error) {
       setStatus({
         type: "error",
