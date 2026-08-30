@@ -37,6 +37,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     params.search || params.category || params.brand || params.min_price || params.max_price
   );
 
+  const activeCategory = params.category
+    ? categories.find((category) => String(category.id) === params.category)
+    : undefined;
+
   const buildHref = (page: number) => {
     const query = new URLSearchParams();
     if (params.search) query.set("search", params.search);
@@ -54,10 +58,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <nav className="mb-4 text-sm text-dark/40">
         <Link href="/" className="hover:text-primary">Home</Link>
         <span className="mx-1">/</span>
-        <span className="text-dark">Shop</span>
+        <span className="text-dark">{activeCategory ? activeCategory.name : "Shop"}</span>
       </nav>
 
-      <h1 className="text-3xl font-bold text-dark">Shop All</h1>
+      <h1 className="text-3xl font-bold text-dark">{activeCategory ? activeCategory.name : "Shop All"}</h1>
 
       <div className="mt-8">
         <ProductFilters
