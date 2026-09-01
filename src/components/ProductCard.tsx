@@ -93,7 +93,8 @@ export function ProductCard({ product }: { product: ProductListItem }) {
             </span>
           </div>
         ) : (
-          <div className="absolute inset-x-2 bottom-2 rounded-xl bg-dark/85 px-3 py-2 text-center text-xs font-semibold uppercase tracking-wide text-white shadow backdrop-blur">
+          <div className="absolute inset-x-2 bottom-2 flex items-center justify-center gap-1.5 rounded-xl bg-white/95 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-dark/70 shadow-lg backdrop-blur dark:bg-gray-900/90">
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-danger" />
             Out of Stock
           </div>
         )}
