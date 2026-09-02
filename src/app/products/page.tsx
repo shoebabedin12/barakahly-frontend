@@ -38,7 +38,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   );
 
   const activeCategory = params.category
-    ? categories.find((category) => String(category.id) === params.category)
+    ? categories.flatMap((category) => [category, ...(category.children ?? [])]).find(
+        (category) => String(category.id) === params.category
+      )
     : undefined;
 
   const buildHref = (page: number) => {

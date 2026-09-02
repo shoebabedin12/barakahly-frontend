@@ -165,7 +165,8 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
             <div className="flex items-center rounded-full border border-black/15 dark:border-white/20">
               <button
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="h-10 w-10 text-lg"
+                disabled={quantity <= 1}
+                className="h-10 w-10 cursor-pointer text-lg disabled:cursor-not-allowed disabled:opacity-30"
                 aria-label="Decrease quantity"
               >
                 &minus;
@@ -173,7 +174,8 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
               <span className="w-8 text-center">{quantity}</span>
               <button
                 onClick={() => setQuantity((q) => Math.min(stock || 1, q + 1))}
-                className="h-10 w-10 text-lg"
+                disabled={quantity >= stock}
+                className="h-10 w-10 cursor-pointer text-lg disabled:cursor-not-allowed disabled:opacity-30"
                 aria-label="Increase quantity"
               >
                 +

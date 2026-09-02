@@ -71,6 +71,7 @@ export interface Category {
   slug: string;
   icon: string | null;
   cover_image: string | null;
+  children?: Category[];
 }
 
 export interface Brand {

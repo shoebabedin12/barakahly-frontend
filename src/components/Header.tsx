@@ -33,11 +33,14 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
-  const [megaOpen, setMegaOpen] = useState(false);
-  const [previewCategoryId, setPreviewCategoryId] = useState<number | null>(categories[0]?.id ?? null);
+  const [openCategoryId, setOpenCategoryId] = useState<number | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+  const triggerRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const [previewCategoryId, setPreviewCategoryId] = useState<number | null>(null);
   const [preview, setPreview] = useState<SearchSuggestion[] | null>(null);
   const previewCache = useRef<Record<number, SearchSuggestion[]>>({});
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [expandedMobileCategoryId, setExpandedMobileCategoryId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!searchOpen) return;
@@ -59,7 +62,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
   }
 
   useEffect(() => {
-    if (!megaOpen || previewCategoryId === null) return;
+    if (openCategoryId === null || previewCategoryId === null) return;
     if (previewCache.current[previewCategoryId]) {
       setPreview(previewCache.current[previewCategoryId]);
       return;
@@ -69,15 +72,28 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
       previewCache.current[previewCategoryId] = items;
       setPreview(items);
     });
-  }, [megaOpen, previewCategoryId]);
+  }, [openCategoryId, previewCategoryId]);
 
-  function openMega() {
+  const MEGA_MENU_WIDTH = 768;
+
+  function openMega(category: Category) {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    setMegaOpen(true);
+    setOpenCategoryId(category.id);
+    setPreviewCategoryId(category.children?.[0]?.id ?? null);
+
+    const trigger = triggerRefs.current[category.id];
+    if (trigger) {
+      const rect = trigger.getBoundingClientRect();
+      const left = Math.max(
+        16,
+        Math.min(rect.left - 256, window.innerWidth - MEGA_MENU_WIDTH - 16)
+      );
+      setMenuPos({ top: rect.bottom + 16, left });
+    }
   }
 
   function scheduleCloseMega() {
-    closeTimer.current = setTimeout(() => setMegaOpen(false), 200);
+    closeTimer.current = setTimeout(() => setOpenCategoryId(null), 200);
   }
 
   return (
@@ -125,76 +141,103 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
             Home
           </Link>
 
-          <div className="relative shrink-0" onMouseEnter={openMega} onMouseLeave={scheduleCloseMega}>
-            <Link
-              href="/products"
-              className={`flex items-center gap-1 transition hover:text-primary ${pathname.startsWith("/products") ? "text-primary" : ""}`}
-            >
-              Shop
-              <IconChevronDown className={`h-3.5 w-3.5 transition ${megaOpen ? "rotate-180" : ""}`} />
-            </Link>
+          {categories.map((category) => {
+            const children = category.children ?? [];
 
-            {categories.length > 0 && megaOpen && (
-              <div className="absolute inset-x-0 top-full z-30 pt-4" style={{ left: "-16rem" }}>
-                <div className="w-3xl rounded-2xl border border-black/10 bg-white shadow-xl dark:border-white/10 dark:bg-gray-900">
-                  <div className="flex gap-8 p-6">
-                    <div className="w-56 shrink-0 border-r border-black/10 pr-6 dark:border-white/10">
-                      <p className="mb-1 px-2 pt-1 text-xs font-semibold uppercase tracking-wider text-dark/40">Categories</p>
-                      <div className="flex flex-col">
-                        {categories.map((category) => (
+            if (children.length === 0) {
+              return (
+                <Link
+                  key={category.id}
+                  href={`/products?category=${category.id}`}
+                  className="shrink-0 transition hover:text-primary"
+                >
+                  {category.name}
+                </Link>
+              );
+            }
+
+            const isOpen = openCategoryId === category.id;
+
+            return (
+              <div
+                key={category.id}
+                ref={(el) => {
+                  triggerRefs.current[category.id] = el;
+                }}
+                className="relative shrink-0"
+                onMouseEnter={() => openMega(category)}
+                onMouseLeave={scheduleCloseMega}
+              >
+                <Link
+                  href={`/products?category=${category.id}`}
+                  className="flex items-center gap-1 transition hover:text-primary"
+                >
+                  {category.name}
+                  <IconChevronDown className={`h-3.5 w-3.5 transition ${isOpen ? "rotate-180" : ""}`} />
+                </Link>
+
+                {isOpen && menuPos && (
+                  <div className="fixed z-30" style={{ top: menuPos.top, left: menuPos.left, width: MEGA_MENU_WIDTH }}>
+                    <div className="rounded-2xl border border-black/10 bg-white shadow-xl dark:border-white/10 dark:bg-gray-900">
+                      <div className="flex gap-8 p-6">
+                        <div className="w-56 shrink-0 border-r border-black/10 pr-6 dark:border-white/10">
+                          <p className="mb-1 px-2 pt-1 text-xs font-semibold uppercase tracking-wider text-dark/40">{category.name}</p>
+                          <div className="flex flex-col">
+                            {children.map((child) => (
+                              <Link
+                                key={child.id}
+                                href={`/products?category=${child.id}`}
+                                onMouseEnter={() => setPreviewCategoryId(child.id)}
+                                className={`group flex items-center gap-3 rounded-xl px-2 py-2.5 text-sm transition hover:bg-background ${
+                                  previewCategoryId === child.id ? "bg-background text-primary" : "text-dark"
+                                }`}
+                              >
+                                <span
+                                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-primary transition group-hover:bg-primary group-hover:text-background ${
+                                    previewCategoryId === child.id ? "bg-primary text-background" : ""
+                                  }`}
+                                >
+                                  <IconShoppingBag className="h-4.5 w-4.5" />
+                                </span>
+                                <span className="min-w-0 leading-snug">{child.name}</span>
+                              </Link>
+                            ))}
+                          </div>
                           <Link
-                            key={category.id}
                             href={`/products?category=${category.id}`}
-                            onMouseEnter={() => setPreviewCategoryId(category.id)}
-                            className="group flex items-center gap-3 rounded-xl px-2 py-2.5 text-sm text-dark transition hover:bg-background"
+                            className="mt-2 block border-t border-black/10 pt-3 text-center text-sm font-medium text-primary hover:underline dark:border-white/10"
                           >
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-primary transition group-hover:bg-primary group-hover:text-background">
-                              <IconShoppingBag className="h-4.5 w-4.5" />
-                            </span>
-                            <span className="min-w-0 leading-snug">{category.name}</span>
+                            View All &rarr;
                           </Link>
-                        ))}
-                      </div>
-                      <Link href="/products" className="mt-2 block border-t border-black/10 pt-3 text-center text-sm font-medium text-primary hover:underline dark:border-white/10">
-                        View All &rarr;
-                      </Link>
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-dark/40">Popular in this category</p>
-                      {!preview && <p className="text-sm text-dark/40">Loading...</p>}
-                      {preview && preview.length === 0 && <p className="text-sm text-dark/40">No products in this category yet.</p>}
-                      {preview && preview.length > 0 && (
-                        <div className="grid grid-cols-4 gap-5">
-                          {preview.map((item) => (
-                            <Link key={item.slug} href={`/products/${item.slug}`} className="group/preview">
-                              <div className="aspect-square overflow-hidden rounded-xl bg-background">
-                                {item.image && (
-                                  <Image src={item.image} alt={item.name} width={120} height={120} className="h-full w-full object-cover transition duration-300 group-hover/preview:scale-105" />
-                                )}
-                              </div>
-                              <p className="mt-2 truncate text-sm text-dark">{item.name}</p>
-                              <p className="text-xs text-dark/40">{item.price} &#2547;</p>
-                            </Link>
-                          ))}
                         </div>
-                      )}
+
+                        <div className="min-w-0 flex-1">
+                          <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-dark/40">Popular in this category</p>
+                          {!preview && <p className="text-sm text-dark/40">Loading...</p>}
+                          {preview && preview.length === 0 && <p className="text-sm text-dark/40">No products in this category yet.</p>}
+                          {preview && preview.length > 0 && (
+                            <div className="grid grid-cols-4 gap-5">
+                              {preview.map((item) => (
+                                <Link key={item.slug} href={`/products/${item.slug}`} className="group/preview">
+                                  <div className="aspect-square overflow-hidden rounded-xl bg-background">
+                                    {item.image && (
+                                      <Image src={item.image} alt={item.name} width={120} height={120} className="h-full w-full object-cover transition duration-300 group-hover/preview:scale-105" />
+                                    )}
+                                  </div>
+                                  <p className="mt-2 truncate text-sm text-dark">{item.name}</p>
+                                  <p className="text-xs text-dark/40">{item.price} &#2547;</p>
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
-            )}
-          </div>
-
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              href={`/products?category=${category.id}`}
-              className="shrink-0 transition hover:text-primary"
-            >
-              {category.name}
-            </Link>
-          ))}
+            );
+          })}
 
           <Link href="/blog" className={`shrink-0 transition hover:text-primary ${pathname.startsWith("/blog") ? "text-primary" : ""}`}>
             Blog
@@ -289,7 +332,6 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
 
           <nav className="flex flex-col gap-1 text-sm font-medium">
             <Link href="/" className="rounded-lg px-2 py-2 hover:bg-background">Home</Link>
-            <Link href="/products" className="rounded-lg px-2 py-2 hover:bg-background">Shop</Link>
             <Link href="/cart" className="rounded-lg px-2 py-2 hover:bg-background">Cart</Link>
             <Link href="/blog" className="rounded-lg px-2 py-2 hover:bg-background">Blog</Link>
             <Link href="/contact" className="rounded-lg px-2 py-2 hover:bg-background">Contact</Link>
@@ -297,14 +339,48 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
             {categories.length > 0 && (
               <>
                 <p className="mt-2 px-2 text-xs font-semibold uppercase tracking-wider text-dark/40">Categories</p>
-                {categories.map((category) => (
-                  <Link key={category.id} href={`/products?category=${category.id}`} className="flex items-center gap-3 rounded-lg px-2 py-2 text-dark/70 hover:bg-background">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background text-primary">
-                      <IconShoppingBag className="h-4 w-4" />
-                    </span>
-                    {category.name}
-                  </Link>
-                ))}
+                {categories.map((category) => {
+                  const children = category.children ?? [];
+                  const isExpanded = expandedMobileCategoryId === category.id;
+
+                  return (
+                    <div key={category.id}>
+                      <div className="flex items-center gap-1 rounded-lg pr-1 text-dark/70 hover:bg-background">
+                        <Link href={`/products?category=${category.id}`} className="flex flex-1 items-center gap-3 px-2 py-2">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background text-primary">
+                            <IconShoppingBag className="h-4 w-4" />
+                          </span>
+                          {category.name}
+                        </Link>
+
+                        {children.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setExpandedMobileCategoryId(isExpanded ? null : category.id)}
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-background"
+                            aria-label={`Toggle ${category.name} subcategories`}
+                          >
+                            <IconChevronDown className={`h-4 w-4 transition ${isExpanded ? "rotate-180" : ""}`} />
+                          </button>
+                        )}
+                      </div>
+
+                      {isExpanded && (
+                        <div className="ml-11 flex flex-col border-l border-black/10 pl-3 dark:border-white/10">
+                          {children.map((child) => (
+                            <Link
+                              key={child.id}
+                              href={`/products?category=${child.id}`}
+                              className="rounded-lg px-2 py-2 text-sm text-dark/70 hover:bg-background"
+                            >
+                              {child.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </>
             )}
 

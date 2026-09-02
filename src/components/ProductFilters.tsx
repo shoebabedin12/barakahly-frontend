@@ -98,7 +98,8 @@ export function ProductFilters({ categories, brands, priceBounds, current, hasAc
   }
 
   const sortLabel = SORT_OPTIONS.find((o) => o.value === (current.sort ?? "latest"))?.label ?? "Default";
-  const selectedCategoryName = categories.find((c) => String(c.id) === current.category)?.name;
+  const allCategories = categories.flatMap((c) => [c, ...(c.children ?? [])]);
+  const selectedCategoryName = allCategories.find((c) => String(c.id) === current.category)?.name;
   const selectedBrandName = brands.find((b) => String(b.id) === current.brand)?.name;
 
   const pillClass = (active: boolean) =>
@@ -136,12 +137,22 @@ export function ProductFilters({ categories, brands, priceBounds, current, hasAc
             <div className="max-h-64 space-y-1 overflow-y-auto">
               <OptionRow label="All Categories" selected={!current.category} onClick={() => navigate({ category: undefined })} />
               {categories.map((c) => (
-                <OptionRow
-                  key={c.id}
-                  label={c.name}
-                  selected={current.category === String(c.id)}
-                  onClick={() => navigate({ category: String(c.id) })}
-                />
+                <div key={c.id}>
+                  <OptionRow
+                    label={c.name}
+                    selected={current.category === String(c.id)}
+                    onClick={() => navigate({ category: String(c.id) })}
+                  />
+                  {(c.children ?? []).map((child) => (
+                    <OptionRow
+                      key={child.id}
+                      label={child.name}
+                      indent
+                      selected={current.category === String(child.id)}
+                      onClick={() => navigate({ category: String(child.id) })}
+                    />
+                  ))}
+                </div>
               ))}
             </div>
           </div>
@@ -319,12 +330,24 @@ export function ProductFilters({ categories, brands, priceBounds, current, hasAc
   );
 }
 
-function OptionRow({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
+function OptionRow({
+  label,
+  selected,
+  onClick,
+  indent,
+}: {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+  indent?: boolean;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm text-dark transition hover:bg-background dark:hover:bg-white/5"
+      className={`flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-sm text-dark transition hover:bg-background dark:hover:bg-white/5 ${
+        indent ? "pl-6 text-dark/70" : ""
+      }`}
     >
       <span
         className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border ${
