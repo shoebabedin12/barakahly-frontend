@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
+import { FloatingInput, FloatingTextarea } from "@/components/FloatingField";
 import { ApiError } from "@/lib/api";
 import { updatePassword, updateProfile } from "@/lib/authApi";
 
@@ -64,8 +65,6 @@ export default function AccountProfilePage() {
     }
   }
 
-  const inputClass = "w-full rounded-lg border border-black/10 bg-white p-2 text-sm dark:border-white/10 dark:bg-white/5";
-
   return (
     <>
       <h1 className="text-2xl font-bold text-dark sm:text-3xl">Profile Settings</h1>
@@ -74,31 +73,16 @@ export default function AccountProfilePage() {
         <h2 className="mb-4 text-lg font-semibold text-dark">Profile Information</h2>
 
         <form onSubmit={handleProfileSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-dark">Name</label>
-            <input required value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
-          </div>
+          <FloatingInput label="Name" required value={name} onChange={(e) => setName(e.target.value)} />
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-dark">Phone</label>
-              <input required value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-dark">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
-            </div>
+            <FloatingInput label="Phone" required value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <FloatingInput label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-dark">Address</label>
-            <textarea value={address} onChange={(e) => setAddress(e.target.value)} className={inputClass} />
-          </div>
+          <FloatingTextarea label="Address" value={address} onChange={(e) => setAddress(e.target.value)} />
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-dark">City</label>
-            <input value={city} onChange={(e) => setCity(e.target.value)} className={inputClass} />
-          </div>
+          <FloatingInput label="City" value={city} onChange={(e) => setCity(e.target.value)} />
 
           {profileError && <p className="text-sm text-danger">{profileError}</p>}
           {profileSuccess && <p className="text-sm text-success">{profileSuccess}</p>}
@@ -117,38 +101,29 @@ export default function AccountProfilePage() {
         <h2 className="mb-4 text-lg font-semibold text-dark">Change Password</h2>
 
         <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-dark">Current Password</label>
-            <input
-              required
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className={inputClass}
-            />
-          </div>
+          <FloatingInput
+            label="Current Password"
+            type="password"
+            required
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-dark">New Password</label>
-              <input
-                required
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-dark">Confirm Password</label>
-              <input
-                required
-                type="password"
-                value={newPasswordConfirmation}
-                onChange={(e) => setNewPasswordConfirmation(e.target.value)}
-                className={inputClass}
-              />
-            </div>
+            <FloatingInput
+              label="New Password"
+              type="password"
+              required
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <FloatingInput
+              label="Confirm Password"
+              type="password"
+              required
+              value={newPasswordConfirmation}
+              onChange={(e) => setNewPasswordConfirmation(e.target.value)}
+            />
           </div>
 
           {passwordError && <p className="text-sm text-danger">{passwordError}</p>}
