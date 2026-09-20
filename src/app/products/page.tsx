@@ -39,7 +39,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   const activeCategory = params.category
     ? categories.flatMap((category) => [category, ...(category.children ?? [])]).find(
-        (category) => String(category.id) === params.category
+        (category) => category.slug === params.category
       )
     : undefined;
 

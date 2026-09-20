@@ -101,7 +101,7 @@ export function SearchBox({ className, onNavigate }: { className?: string; onNav
                 {item.image && <Image src={item.image} alt={item.name} width={44} height={44} className="h-full w-full object-cover" />}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm text-dark">{item.name}</p>
+                <p className="line-clamp-2 text-sm text-dark">{item.name}</p>
                 <p className="text-xs text-dark/40">{item.price} &#2547;</p>
               </div>
             </Link>

@@ -19,7 +19,7 @@ export function CategoryCarousel({ categories }: { categories: Category[] }) {
         {categories.map((category) => (
           <Link
             key={category.id}
-            href={`/products?category=${category.id}`}
+            href={`/products?category=${category.slug}`}
             className="group flex w-28 shrink-0 flex-col items-center gap-3 text-center sm:w-36"
           >
             <div className="relative h-28 w-28 overflow-hidden rounded-full bg-black/5 transition group-hover:opacity-90 sm:h-36 sm:w-36 dark:bg-white/5">

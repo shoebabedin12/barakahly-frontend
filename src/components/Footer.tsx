@@ -262,7 +262,7 @@ export function Footer({ settings, categories }: { settings: Settings | null; ca
                   {categories.map((category) => (
                     <Link
                       key={category.id}
-                      href={`/products?category=${category.id}`}
+                      href={`/products?category=${category.slug}`}
                       className="truncate text-sm text-background/70 hover:text-secondary"
                     >
                       {category.name}

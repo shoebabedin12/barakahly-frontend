@@ -41,6 +41,32 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
   const previewCache = useRef<Record<number, SearchSuggestion[]>>({});
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [expandedMobileCategoryId, setExpandedMobileCategoryId] = useState<number | null>(null);
+  const navScrollRef = useRef<HTMLElement>(null);
+  const [showNavLeftArrow, setShowNavLeftArrow] = useState(false);
+  const [showNavRightArrow, setShowNavRightArrow] = useState(false);
+
+  function updateNavArrows() {
+    const el = navScrollRef.current;
+    if (!el) return;
+    setShowNavLeftArrow(el.scrollLeft > 4);
+    setShowNavRightArrow(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }
+
+  useEffect(() => {
+    updateNavArrows();
+    const el = navScrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", updateNavArrows, { passive: true });
+    window.addEventListener("resize", updateNavArrows);
+    return () => {
+      el.removeEventListener("scroll", updateNavArrows);
+      window.removeEventListener("resize", updateNavArrows);
+    };
+  }, [categories]);
+
+  function scrollNavBy(amount: number) {
+    navScrollRef.current?.scrollBy({ left: amount, behavior: "smooth" });
+  }
 
   useEffect(() => {
     if (!searchOpen) return;
@@ -136,7 +162,25 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
           )}
         </Link>
 
-        <nav className="hide-scrollbar hidden min-w-0 flex-1 items-center gap-6 overflow-x-auto whitespace-nowrap text-sm font-medium text-dark lg:flex">
+        <div className="relative hidden min-w-0 flex-1 lg:block">
+
+          {showNavLeftArrow && (
+            <button
+              type="button"
+              onClick={() => scrollNavBy(-220)}
+              aria-label="Scroll navigation left"
+              className="absolute left-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background dark:border-white/10 dark:bg-gray-900"
+            >
+              <IconChevronDown className="h-3.5 w-3.5 rotate-90 text-dark" />
+            </button>
+          )}
+
+          <nav
+            ref={navScrollRef}
+            className={`hide-scrollbar flex items-center gap-6 overflow-x-auto whitespace-nowrap text-sm font-medium text-dark ${
+              showNavLeftArrow ? "pl-8" : ""
+            } ${showNavRightArrow ? "pr-8" : ""}`}
+          >
           <Link href="/" className={`shrink-0 transition hover:text-primary ${pathname === "/" ? "text-primary" : ""}`}>
             Home
           </Link>
@@ -148,7 +192,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
               return (
                 <Link
                   key={category.id}
-                  href={`/products?category=${category.id}`}
+                  href={`/products?category=${category.slug}`}
                   className="shrink-0 transition hover:text-primary"
                 >
                   {category.name}
@@ -169,7 +213,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                 onMouseLeave={scheduleCloseMega}
               >
                 <Link
-                  href={`/products?category=${category.id}`}
+                  href={`/products?category=${category.slug}`}
                   className="flex items-center gap-1 transition hover:text-primary"
                 >
                   {category.name}
@@ -186,7 +230,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                             {children.map((child) => (
                               <Link
                                 key={child.id}
-                                href={`/products?category=${child.id}`}
+                                href={`/products?category=${child.slug}`}
                                 onMouseEnter={() => setPreviewCategoryId(child.id)}
                                 className={`group flex items-center gap-3 rounded-xl px-2 py-2.5 text-sm transition hover:bg-background ${
                                   previewCategoryId === child.id ? "bg-background text-primary" : "text-dark"
@@ -204,7 +248,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                             ))}
                           </div>
                           <Link
-                            href={`/products?category=${category.id}`}
+                            href={`/products?category=${category.slug}`}
                             className="mt-2 block border-t border-black/10 pt-3 text-center text-sm font-medium text-primary hover:underline dark:border-white/10"
                           >
                             View All &rarr;
@@ -245,7 +289,20 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
           <Link href="/contact" className={`shrink-0 transition hover:text-primary ${pathname === "/contact" ? "text-primary" : ""}`}>
             Contact
           </Link>
-        </nav>
+          </nav>
+
+          {showNavRightArrow && (
+            <button
+              type="button"
+              onClick={() => scrollNavBy(220)}
+              aria-label="Scroll navigation right"
+              className="absolute right-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background dark:border-white/10 dark:bg-gray-900"
+            >
+              <IconChevronDown className="h-3.5 w-3.5 -rotate-90 text-dark" />
+            </button>
+          )}
+
+        </div>
 
         <div ref={searchRef} className="relative hidden lg:block">
           <button
@@ -258,7 +315,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
           </button>
 
           {searchOpen && (
-            <div className="absolute right-0 top-full z-40 mt-2 w-80 rounded-2xl border border-black/10 bg-white p-3 shadow-lg dark:border-white/10 dark:bg-gray-900">
+            <div className="absolute right-0 top-full z-40 mt-2 w-md rounded-2xl border border-black/10 bg-white p-3 shadow-lg dark:border-white/10 dark:bg-gray-900">
               <SearchBox onNavigate={() => setSearchOpen(false)} />
             </div>
           )}
@@ -346,7 +403,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                   return (
                     <div key={category.id}>
                       <div className="flex items-center gap-1 rounded-lg pr-1 text-dark/70 hover:bg-background">
-                        <Link href={`/products?category=${category.id}`} className="flex flex-1 items-center gap-3 px-2 py-2">
+                        <Link href={`/products?category=${category.slug}`} className="flex flex-1 items-center gap-3 px-2 py-2">
                           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background text-primary">
                             <IconShoppingBag className="h-4 w-4" />
                           </span>
@@ -370,7 +427,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                           {children.map((child) => (
                             <Link
                               key={child.id}
-                              href={`/products?category=${child.id}`}
+                              href={`/products?category=${child.slug}`}
                               className="rounded-lg px-2 py-2 text-sm text-dark/70 hover:bg-background"
                             >
                               {child.name}
