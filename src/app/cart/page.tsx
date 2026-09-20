@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCart } from "@/components/CartProvider";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCarousel } from "@/components/ProductCarousel";
 import { RecentlyViewedSection } from "@/components/RecentlyViewedSection";
 import { applyCoupon, removeCartItem, updateCartItem } from "@/lib/cart";
 import { ApiError } from "@/lib/api";
@@ -94,11 +94,7 @@ export default function CartPage() {
         {suggestions.length > 0 && (
           <section className="py-6">
             <h2 className="mb-4 text-xl font-semibold text-dark">You May Also Like</h2>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {suggestions.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <ProductCarousel products={suggestions} />
           </section>
         )}
 
@@ -253,11 +249,7 @@ export default function CartPage() {
       {suggestions.length > 0 && (
         <section className="py-6">
           <h2 className="mb-4 text-xl font-semibold text-dark">You May Also Like</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {suggestions.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <ProductCarousel products={suggestions} />
         </section>
       )}
 
