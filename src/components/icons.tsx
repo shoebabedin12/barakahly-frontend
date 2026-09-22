@@ -148,6 +148,22 @@ export function IconChevronDown({ className }: IconProps) {
   );
 }
 
+export function IconChevronLeft({ className }: IconProps) {
+  return (
+    <Icon className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+    </Icon>
+  );
+}
+
+export function IconChevronRight({ className }: IconProps) {
+  return (
+    <Icon className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+    </Icon>
+  );
+}
+
 export function IconBars3({ className }: IconProps) {
   return (
     <Icon className={className}>

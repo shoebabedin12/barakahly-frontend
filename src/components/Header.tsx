@@ -11,6 +11,8 @@ import { SearchBox } from "./SearchBox";
 import {
   IconBars3,
   IconChevronDown,
+  IconChevronLeft,
+  IconChevronRight,
   IconHeart,
   IconMagnifyingGlass,
   IconMoon,
@@ -41,6 +43,29 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
   const previewCache = useRef<Record<number, SearchSuggestion[]>>({});
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [expandedMobileCategoryId, setExpandedMobileCategoryId] = useState<number | null>(null);
+
+  const navRef = useRef<HTMLElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  function updateNavScrollState() {
+    const el = navRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }
+
+  function slideNav(direction: 1 | -1) {
+    const el = navRef.current;
+    if (!el) return;
+    el.scrollBy({ left: direction * Math.max(el.clientWidth * 0.7, 240), behavior: "smooth" });
+  }
+
+  useEffect(() => {
+    updateNavScrollState();
+    window.addEventListener("resize", updateNavScrollState);
+    return () => window.removeEventListener("resize", updateNavScrollState);
+  }, [categories]);
 
   useEffect(() => {
     if (!searchOpen) return;
@@ -136,7 +161,25 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
           )}
         </Link>
 
-        <nav className="hide-scrollbar hidden min-w-0 flex-1 items-center gap-6 overflow-x-auto whitespace-nowrap text-sm font-medium text-dark lg:flex">
+        <div className="relative hidden min-w-0 flex-1 lg:block">
+          {canScrollLeft && (
+            <button
+              type="button"
+              onClick={() => slideNav(-1)}
+              aria-label="Scroll categories left"
+              className="absolute left-0 top-0 z-10 flex h-full items-center bg-linear-to-r from-white via-white to-transparent pr-4 dark:from-gray-900 dark:via-gray-900"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
+                <IconChevronLeft className="h-4 w-4" />
+              </span>
+            </button>
+          )}
+
+          <nav
+            ref={navRef}
+            onScroll={updateNavScrollState}
+            className="hide-scrollbar flex scroll-smooth items-center gap-6 overflow-x-auto whitespace-nowrap text-sm font-medium text-dark"
+          >
           <Link href="/" className={`shrink-0 transition hover:text-primary ${pathname === "/" ? "text-primary" : ""}`}>
             Home
           </Link>
@@ -245,7 +288,21 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
           <Link href="/contact" className={`shrink-0 transition hover:text-primary ${pathname === "/contact" ? "text-primary" : ""}`}>
             Contact
           </Link>
-        </nav>
+          </nav>
+
+          {canScrollRight && (
+            <button
+              type="button"
+              onClick={() => slideNav(1)}
+              aria-label="Scroll categories right"
+              className="absolute right-0 top-0 z-10 flex h-full items-center bg-linear-to-l from-white via-white to-transparent pl-4 dark:from-gray-900 dark:via-gray-900"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
+                <IconChevronRight className="h-4 w-4" />
+              </span>
+            </button>
+          )}
+        </div>
 
         <div ref={searchRef} className="relative hidden lg:block">
           <button
