@@ -83,9 +83,14 @@ export function ProductCard({ product }: { product: ProductListItem }) {
               type="button"
               onClick={handleQuickViewClick}
               aria-label="Quick view"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-background shadow-sm transition hover:opacity-90 active:scale-95"
+              className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-background shadow-md transition hover:scale-110 hover:shadow-lg active:scale-95"
             >
-              <IconShoppingBag className="h-4 w-4" />
+              <IconShoppingBag className="h-4.5 w-4.5" />
+              <span className="absolute -right-1 -top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-danger text-white ring-2 ring-white dark:ring-gray-900">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="h-2.5 w-2.5">
+                  <path strokeLinecap="round" d="M12 5v14M5 12h14" />
+                </svg>
+              </span>
             </button>
             <span className="flex min-w-0 items-center gap-1.5 truncate text-xs font-semibold text-dark/70">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-success" />

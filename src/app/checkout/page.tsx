@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useCart } from "@/components/CartProvider";
 import { IconChevronDown } from "@/components/icons";
+import { FloatingInput, FloatingTextarea } from "@/components/FloatingField";
 import { ApiError } from "@/lib/api";
 import { isAuthenticated } from "@/lib/auth";
 import { placeOrder, sendCheckoutOtp, verifyCheckoutOtp, initSslcommerzPayment } from "@/lib/checkout";
@@ -195,9 +196,6 @@ function CheckoutForm() {
     );
   }
 
-  const inputClass =
-    "rounded-lg border border-black/10 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/5";
-
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <Link href="/cart" className="mb-4 inline-flex items-center gap-1 text-sm text-dark/50 hover:text-primary">
@@ -233,96 +231,78 @@ function CheckoutForm() {
             {activeStep === 1 && (
               <div className="border-t border-black/10 p-4 dark:border-white/10">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <label className="flex flex-col gap-1 text-sm">
-                    Full name
-                    <input required value={name} onChange={(e) => setName(e.target.value)} className={inputClass} />
-                  </label>
+                  <FloatingInput label="Full name" required value={name} onChange={(e) => setName(e.target.value)} />
 
-                  <label className="flex flex-col gap-1 text-sm">
-                    Phone
-                    <input required value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
-                  </label>
+                  <FloatingInput label="Phone" required value={phone} onChange={(e) => setPhone(e.target.value)} />
 
-                  <label className="col-span-full flex flex-col gap-1 text-sm">
-                    Email
-                    <div className="flex gap-2">
-                      <input
-                        required
-                        type="email"
-                        value={email}
-                        disabled={otpSent}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className={`flex-1 disabled:opacity-60 ${inputClass}`}
-                      />
-                      {!verifyToken && (
-                        <button
-                          type="button"
-                          onClick={handleSendOtp}
-                          disabled={otpBusy || otpSent}
-                          className="shrink-0 rounded-lg border border-primary px-3 text-sm font-semibold text-primary disabled:opacity-50"
-                        >
-                          {otpSent ? "Code sent" : "Send code"}
-                        </button>
-                      )}
-                    </div>
-                  </label>
+                  <div className="col-span-full flex gap-2">
+                    <FloatingInput
+                      label="Email"
+                      type="email"
+                      required
+                      disabled={otpSent}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="flex-1"
+                    />
+                    {!verifyToken && (
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={otpBusy || otpSent}
+                        className="shrink-0 rounded-lg border border-primary px-3 text-sm font-semibold text-primary disabled:opacity-50"
+                      >
+                        {otpSent ? "Code sent" : "Send code"}
+                      </button>
+                    )}
+                  </div>
 
                   {otpSent && !verifyToken && (
-                    <label className="col-span-full flex flex-col gap-1 text-sm">
-                      Verification code
-                      <div className="flex gap-2">
-                        <input
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value)}
-                          className={`flex-1 ${inputClass}`}
-                        />
-                        <button
-                          type="button"
-                          onClick={handleVerifyOtp}
-                          disabled={otpBusy}
-                          className="shrink-0 rounded-lg bg-primary px-3 text-sm font-semibold text-background disabled:opacity-50"
-                        >
-                          Verify
-                        </button>
-                      </div>
-                    </label>
+                    <div className="col-span-full flex gap-2">
+                      <FloatingInput
+                        label="Verification code"
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value)}
+                        className="flex-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleVerifyOtp}
+                        disabled={otpBusy}
+                        className="shrink-0 rounded-lg bg-primary px-3 text-sm font-semibold text-background disabled:opacity-50"
+                      >
+                        Verify
+                      </button>
+                    </div>
                   )}
 
                   {otpMessage && <p className="col-span-full text-sm text-success">{otpMessage}</p>}
 
-                  <label className="col-span-full flex flex-col gap-1 text-sm">
-                    Shipping address
-                    <textarea
-                      required
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      rows={3}
-                      className={inputClass}
-                    />
-                  </label>
+                  <FloatingTextarea
+                    label="Shipping address"
+                    required
+                    rows={3}
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="col-span-full"
+                  />
 
                   {!authenticated && (
                     <>
-                      <label className="flex flex-col gap-1 text-sm">
-                        Password
-                        <input
-                          required
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className={inputClass}
-                        />
-                      </label>
-                      <label className="flex flex-col gap-1 text-sm">
-                        Confirm password
-                        <input
-                          required
-                          type="password"
-                          value={passwordConfirmation}
-                          onChange={(e) => setPasswordConfirmation(e.target.value)}
-                          className={inputClass}
-                        />
-                      </label>
+                      <FloatingInput
+                        label="Password"
+                        type="password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                      <FloatingInput
+                        label="Confirm password"
+                        type="password"
+                        required
+                        value={passwordConfirmation}
+                        onChange={(e) => setPasswordConfirmation(e.target.value)}
+                      />
                     </>
                   )}
                 </div>
@@ -451,15 +431,13 @@ function CheckoutForm() {
                 </div>
 
                 {selectedPaymentMethod && selectedPaymentMethod.code !== "cod" && selectedPaymentMethod.code !== "sslcommerz" && (
-                  <label className="mt-3 flex flex-col gap-1 text-sm">
-                    Transaction ID
-                    <input
-                      required
-                      value={transactionId}
-                      onChange={(e) => setTransactionId(e.target.value)}
-                      className={inputClass}
-                    />
-                  </label>
+                  <FloatingInput
+                    label="Transaction ID"
+                    required
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    className="mt-3"
+                  />
                 )}
 
                 {error && <p className="mt-3 text-sm text-danger">{error}</p>}

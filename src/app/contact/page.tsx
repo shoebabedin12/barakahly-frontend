@@ -6,6 +6,7 @@ import { getSettings } from "@/lib/queries";
 import { sendContactMessage } from "@/lib/site";
 import type { Settings } from "@/lib/types";
 import { IconChatBubble, IconEnvelope, IconMapPin, IconPhone } from "@/components/icons";
+import { FloatingInput, FloatingTextarea } from "@/components/FloatingField";
 
 export default function ContactPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -53,46 +54,25 @@ export default function ContactPage() {
           <div className="rounded-2xl border border-black/10 p-6 dark:border-white/10">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-dark">Name</label>
-                  <input
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-lg border border-black/10 p-3 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-white/5"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-dark">Phone (optional)</label>
-                  <input
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full rounded-lg border border-black/10 p-3 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-white/5"
-                  />
-                </div>
+                <FloatingInput label="Name" required value={name} onChange={(e) => setName(e.target.value)} />
+                <FloatingInput label="Phone (optional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
 
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-dark">Email</label>
-                <input
-                  required
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-lg border border-black/10 p-3 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-white/5"
-                />
-              </div>
+              <FloatingInput
+                label="Email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
 
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-dark">Message</label>
-                <textarea
-                  required
-                  rows={5}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="w-full rounded-lg border border-black/10 p-3 text-sm focus:border-primary focus:outline-none dark:border-white/10 dark:bg-white/5"
-                />
-              </div>
+              <FloatingTextarea
+                label="Message"
+                required
+                rows={5}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
 
               {error && <p className="text-sm text-danger">{error}</p>}
               {success && <p className="text-sm text-success">{success}</p>}

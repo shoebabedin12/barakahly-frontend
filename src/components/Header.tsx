@@ -11,8 +11,6 @@ import { SearchBox } from "./SearchBox";
 import {
   IconBars3,
   IconChevronDown,
-  IconChevronLeft,
-  IconChevronRight,
   IconHeart,
   IconMagnifyingGlass,
   IconMoon,
@@ -43,29 +41,32 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
   const previewCache = useRef<Record<number, SearchSuggestion[]>>({});
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [expandedMobileCategoryId, setExpandedMobileCategoryId] = useState<number | null>(null);
+  const navScrollRef = useRef<HTMLElement>(null);
+  const [showNavLeftArrow, setShowNavLeftArrow] = useState(false);
+  const [showNavRightArrow, setShowNavRightArrow] = useState(false);
 
-  const navRef = useRef<HTMLElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  function updateNavScrollState() {
-    const el = navRef.current;
+  function updateNavArrows() {
+    const el = navScrollRef.current;
     if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 4);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  }
-
-  function slideNav(direction: 1 | -1) {
-    const el = navRef.current;
-    if (!el) return;
-    el.scrollBy({ left: direction * Math.max(el.clientWidth * 0.7, 240), behavior: "smooth" });
+    setShowNavLeftArrow(el.scrollLeft > 4);
+    setShowNavRightArrow(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
   }
 
   useEffect(() => {
-    updateNavScrollState();
-    window.addEventListener("resize", updateNavScrollState);
-    return () => window.removeEventListener("resize", updateNavScrollState);
+    updateNavArrows();
+    const el = navScrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", updateNavArrows, { passive: true });
+    window.addEventListener("resize", updateNavArrows);
+    return () => {
+      el.removeEventListener("scroll", updateNavArrows);
+      window.removeEventListener("resize", updateNavArrows);
+    };
   }, [categories]);
+
+  function scrollNavBy(amount: number) {
+    navScrollRef.current?.scrollBy({ left: amount, behavior: "smooth" });
+  }
 
   useEffect(() => {
     if (!searchOpen) return;
@@ -162,23 +163,23 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
         </Link>
 
         <div className="relative hidden min-w-0 flex-1 lg:block">
-          {canScrollLeft && (
+
+          {showNavLeftArrow && (
             <button
               type="button"
-              onClick={() => slideNav(-1)}
-              aria-label="Scroll categories left"
-              className="absolute left-0 top-0 z-10 flex h-full items-center bg-linear-to-r from-white via-white to-transparent pr-4 dark:from-gray-900 dark:via-gray-900"
+              onClick={() => scrollNavBy(-220)}
+              aria-label="Scroll navigation left"
+              className="absolute left-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background dark:border-white/10 dark:bg-gray-900"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
-                <IconChevronLeft className="h-4 w-4" />
-              </span>
+              <IconChevronDown className="h-3.5 w-3.5 rotate-90 text-dark" />
             </button>
           )}
 
           <nav
-            ref={navRef}
-            onScroll={updateNavScrollState}
-            className="hide-scrollbar flex scroll-smooth items-center gap-6 overflow-x-auto whitespace-nowrap text-sm font-medium text-dark"
+            ref={navScrollRef}
+            className={`hide-scrollbar flex items-center gap-6 overflow-x-auto whitespace-nowrap text-sm font-medium text-dark ${
+              showNavLeftArrow ? "pl-8" : ""
+            } ${showNavRightArrow ? "pr-8" : ""}`}
           >
           <Link href="/" className={`shrink-0 transition hover:text-primary ${pathname === "/" ? "text-primary" : ""}`}>
             Home
@@ -191,7 +192,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
               return (
                 <Link
                   key={category.id}
-                  href={`/products?category=${category.id}`}
+                  href={`/products?category=${category.slug}`}
                   className="shrink-0 transition hover:text-primary"
                 >
                   {category.name}
@@ -212,7 +213,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                 onMouseLeave={scheduleCloseMega}
               >
                 <Link
-                  href={`/products?category=${category.id}`}
+                  href={`/products?category=${category.slug}`}
                   className="flex items-center gap-1 transition hover:text-primary"
                 >
                   {category.name}
@@ -229,7 +230,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                             {children.map((child) => (
                               <Link
                                 key={child.id}
-                                href={`/products?category=${child.id}`}
+                                href={`/products?category=${child.slug}`}
                                 onMouseEnter={() => setPreviewCategoryId(child.id)}
                                 className={`group flex items-center gap-3 rounded-xl px-2 py-2.5 text-sm transition hover:bg-background ${
                                   previewCategoryId === child.id ? "bg-background text-primary" : "text-dark"
@@ -247,7 +248,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                             ))}
                           </div>
                           <Link
-                            href={`/products?category=${category.id}`}
+                            href={`/products?category=${category.slug}`}
                             className="mt-2 block border-t border-black/10 pt-3 text-center text-sm font-medium text-primary hover:underline dark:border-white/10"
                           >
                             View All &rarr;
@@ -290,16 +291,14 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
           </Link>
           </nav>
 
-          {canScrollRight && (
+          {showNavRightArrow && (
             <button
               type="button"
-              onClick={() => slideNav(1)}
-              aria-label="Scroll categories right"
-              className="absolute right-0 top-0 z-10 flex h-full items-center bg-linear-to-l from-white via-white to-transparent pl-4 dark:from-gray-900 dark:via-gray-900"
+              onClick={() => scrollNavBy(220)}
+              aria-label="Scroll navigation right"
+              className="absolute right-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background dark:border-white/10 dark:bg-gray-900"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
-                <IconChevronRight className="h-4 w-4" />
-              </span>
+              <IconChevronDown className="h-3.5 w-3.5 -rotate-90 text-dark" />
             </button>
           )}
         </div>
@@ -315,7 +314,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
           </button>
 
           {searchOpen && (
-            <div className="absolute right-0 top-full z-40 mt-2 w-80 rounded-2xl border border-black/10 bg-white p-3 shadow-lg dark:border-white/10 dark:bg-gray-900">
+            <div className="absolute right-0 top-full z-40 mt-2 w-md rounded-2xl border border-black/10 bg-white p-3 shadow-lg dark:border-white/10 dark:bg-gray-900">
               <SearchBox onNavigate={() => setSearchOpen(false)} />
             </div>
           )}
@@ -403,7 +402,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                   return (
                     <div key={category.id}>
                       <div className="flex items-center gap-1 rounded-lg pr-1 text-dark/70 hover:bg-background">
-                        <Link href={`/products?category=${category.id}`} className="flex flex-1 items-center gap-3 px-2 py-2">
+                        <Link href={`/products?category=${category.slug}`} className="flex flex-1 items-center gap-3 px-2 py-2">
                           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background text-primary">
                             <IconShoppingBag className="h-4 w-4" />
                           </span>
@@ -427,7 +426,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                           {children.map((child) => (
                             <Link
                               key={child.id}
-                              href={`/products?category=${child.id}`}
+                              href={`/products?category=${child.slug}`}
                               className="rounded-lg px-2 py-2 text-sm text-dark/70 hover:bg-background"
                             >
                               {child.name}

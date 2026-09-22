@@ -45,6 +45,19 @@ export function ProductFilters({ categories, brands, priceBounds, current, hasAc
     Math.max(current.maxPrice ?? priceBounds.max, priceBounds.min + minGap)
   );
 
+  // Re-sync whenever the price bounds change (e.g. switching category swaps in a
+  // new priceBounds prop without remounting this component) so the slider
+  // doesn't keep stale values from the previous category's range. Adjusted
+  // during render rather than in an effect, mirroring Header.tsx's
+  // pathname-reset pattern.
+  const boundsKey = `${priceBounds.min}-${priceBounds.max}-${current.minPrice}-${current.maxPrice}`;
+  const [syncedBoundsKey, setSyncedBoundsKey] = useState(boundsKey);
+  if (boundsKey !== syncedBoundsKey) {
+    setSyncedBoundsKey(boundsKey);
+    setMinPrice(Math.min(current.minPrice ?? priceBounds.min, priceBounds.max - minGap));
+    setMaxPrice(Math.max(current.maxPrice ?? priceBounds.max, priceBounds.min + minGap));
+  }
+
   const trackRef = useRef<HTMLDivElement>(null);
   const leftPct = ((minPrice - priceBounds.min) / range) * 100;
   const rightPct = ((maxPrice - priceBounds.min) / range) * 100;
@@ -99,7 +112,7 @@ export function ProductFilters({ categories, brands, priceBounds, current, hasAc
 
   const sortLabel = SORT_OPTIONS.find((o) => o.value === (current.sort ?? "latest"))?.label ?? "Default";
   const allCategories = categories.flatMap((c) => [c, ...(c.children ?? [])]);
-  const selectedCategoryName = allCategories.find((c) => String(c.id) === current.category)?.name;
+  const selectedCategoryName = allCategories.find((c) => c.slug === current.category)?.name;
   const selectedBrandName = brands.find((b) => String(b.id) === current.brand)?.name;
 
   const pillClass = (active: boolean) =>
@@ -140,16 +153,16 @@ export function ProductFilters({ categories, brands, priceBounds, current, hasAc
                 <div key={c.id}>
                   <OptionRow
                     label={c.name}
-                    selected={current.category === String(c.id)}
-                    onClick={() => navigate({ category: String(c.id) })}
+                    selected={current.category === c.slug}
+                    onClick={() => navigate({ category: c.slug })}
                   />
                   {(c.children ?? []).map((child) => (
                     <OptionRow
                       key={child.id}
                       label={child.name}
                       indent
-                      selected={current.category === String(child.id)}
-                      onClick={() => navigate({ category: String(child.id) })}
+                      selected={current.category === child.slug}
+                      onClick={() => navigate({ category: child.slug })}
                     />
                   ))}
                 </div>

@@ -201,7 +201,14 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
         {product.description && (
           <div className="mt-8 border-t border-black/10 pt-6 text-sm leading-relaxed text-dark/80 dark:border-white/10">
             <p className="mb-2 font-semibold text-dark">Description</p>
-            <p className="whitespace-pre-line">{product.description}</p>
+            <div
+              className="[&_p]:mb-3 [&_a]:text-primary [&_a]:underline
+                [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-1
+                [&_table]:mb-3 [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto [&_table]:border-collapse
+                [&_td]:border [&_td]:border-black/10 [&_td]:p-2 [&_td]:align-top dark:[&_td]:border-white/10
+                [&_img]:my-4 [&_img]:rounded-xl"
+              dangerouslySetInnerHTML={{ __html: product.description }}
+            />
           </div>
         )}
       </div>

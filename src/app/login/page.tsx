@@ -6,6 +6,7 @@ import { Suspense, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useCart } from "@/components/CartProvider";
 import { IconLock, IconUser } from "@/components/icons";
+import { FloatingInput } from "@/components/FloatingField";
 import { ApiError } from "@/lib/api";
 import { login } from "@/lib/authApi";
 
@@ -56,33 +57,23 @@ function LoginForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-dark">Email or Phone</label>
-            <div className="relative">
-              <IconUser className="pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-dark/40" />
-              <input
-                required
-                autoFocus
-                value={loginField}
-                onChange={(e) => setLoginField(e.target.value)}
-                className="w-full rounded-xl border border-black/10 bg-white py-3 pl-10 pr-4 text-sm text-dark focus:border-primary focus:outline-none dark:border-white/10 dark:bg-white/5"
-              />
-            </div>
-          </div>
+          <FloatingInput
+            label="Email or Phone"
+            required
+            autoFocus
+            value={loginField}
+            onChange={(e) => setLoginField(e.target.value)}
+            icon={IconUser}
+          />
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-dark">Password</label>
-            <div className="relative">
-              <IconLock className="pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-dark/40" />
-              <input
-                required
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl border border-black/10 bg-white py-3 pl-10 pr-4 text-sm text-dark focus:border-primary focus:outline-none dark:border-white/10 dark:bg-white/5"
-              />
-            </div>
-          </div>
+          <FloatingInput
+            label="Password"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            icon={IconLock}
+          />
 
           {error && <p className="text-sm text-danger">{error}</p>}
 

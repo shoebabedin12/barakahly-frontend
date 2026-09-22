@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useCart } from "@/components/CartProvider";
 import { IconEnvelope, IconLock, IconPhone, IconUser } from "@/components/icons";
+import { FloatingInput, FloatingTextarea } from "@/components/FloatingField";
 import { ApiError } from "@/lib/api";
 import { register } from "@/lib/authApi";
 
@@ -22,10 +23,6 @@ export default function RegisterPage() {
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const inputClass =
-    "w-full rounded-xl border border-black/10 bg-white py-3 pl-10 pr-4 text-sm text-dark focus:border-primary focus:outline-none dark:border-white/10 dark:bg-white/5";
-  const iconClass = "pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-dark/40";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,70 +60,37 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-dark">Name</label>
-            <input
-              required
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border border-black/10 bg-white p-3 text-sm text-dark focus:border-primary focus:outline-none dark:border-white/10 dark:bg-white/5"
-            />
-          </div>
+          <FloatingInput label="Name" required autoFocus value={name} onChange={(e) => setName(e.target.value)} />
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-dark">Phone</label>
-            <div className="relative">
-              <IconPhone className={iconClass} />
-              <input required value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
-            </div>
-          </div>
+          <FloatingInput label="Phone" required value={phone} onChange={(e) => setPhone(e.target.value)} icon={IconPhone} />
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-dark">Email (optional)</label>
-            <div className="relative">
-              <IconEnvelope className={iconClass} />
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
-            </div>
-          </div>
+          <FloatingInput
+            label="Email (optional)"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            icon={IconEnvelope}
+          />
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-dark">Address</label>
-            <textarea
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              rows={2}
-              className="w-full rounded-xl border border-black/10 bg-white p-3 text-sm text-dark focus:border-primary focus:outline-none dark:border-white/10 dark:bg-white/5"
-            />
-          </div>
+          <FloatingTextarea label="Address" rows={2} value={address} onChange={(e) => setAddress(e.target.value)} />
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-dark">Password</label>
-            <div className="relative">
-              <IconLock className={iconClass} />
-              <input
-                required
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-          </div>
+          <FloatingInput
+            label="Password"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            icon={IconLock}
+          />
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-dark">Confirm Password</label>
-            <div className="relative">
-              <IconLock className={iconClass} />
-              <input
-                required
-                type="password"
-                value={passwordConfirmation}
-                onChange={(e) => setPasswordConfirmation(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-          </div>
+          <FloatingInput
+            label="Confirm Password"
+            type="password"
+            required
+            value={passwordConfirmation}
+            onChange={(e) => setPasswordConfirmation(e.target.value)}
+            icon={IconLock}
+          />
 
           {error && <p className="text-sm text-danger">{error}</p>}
 
