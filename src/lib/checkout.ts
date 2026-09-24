@@ -23,8 +23,9 @@ export interface PlaceOrderPayload {
   payment_method_id: number;
   shipping_zone_id: number;
   coupon_code?: string;
-  verify_token: string;
+  verify_token?: string;
   transaction_id?: string;
+  payment_date?: string;
   password?: string;
   password_confirmation?: string;
 }

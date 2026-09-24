@@ -4,11 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { useAuth } from "@/components/AuthProvider";
 import { useCart } from "@/components/CartProvider";
 import { IconChevronDown } from "@/components/icons";
 import { FloatingInput, FloatingTextarea } from "@/components/FloatingField";
+import { PasswordRequirements, passwordMeetsRequirements } from "@/components/PasswordRequirements";
 import { ApiError } from "@/lib/api";
-import { isAuthenticated } from "@/lib/auth";
 import { placeOrder, sendCheckoutOtp, verifyCheckoutOtp, initSslcommerzPayment } from "@/lib/checkout";
 import { getAppliedCoupon, setAppliedCoupon } from "@/lib/coupon";
 import { getCheckoutOptions } from "@/lib/queries";
@@ -33,9 +34,10 @@ function CheckoutForm() {
   const searchParams = useSearchParams();
   const paymentError = PAYMENT_ERROR_MESSAGES[searchParams.get("payment") ?? ""];
   const { cart, loading: cartLoading, refreshCart } = useCart();
+  const { customer, loading: authLoading } = useAuth();
+  const authenticated = Boolean(customer);
 
   const [options, setOptions] = useState<CheckoutOptions | null>(null);
-  const [authenticated, setAuthenticated] = useState(false);
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
   const [bagOpen, setBagOpen] = useState(true);
 
@@ -46,6 +48,7 @@ function CheckoutForm() {
   const [paymentMethodId, setPaymentMethodId] = useState<number | null>(null);
   const [shippingZoneId, setShippingZoneId] = useState<number | null>(null);
   const [transactionId, setTransactionId] = useState("");
+  const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
 
@@ -59,14 +62,21 @@ function CheckoutForm() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading a client-only localStorage value on mount
-    setAuthenticated(isAuthenticated());
     getCheckoutOptions().then((data) => {
       setOptions(data);
       setPaymentMethodId(data.payment_methods[0]?.id ?? null);
       setShippingZoneId(data.shipping_zones[0]?.id ?? null);
     });
   }, []);
+
+  useEffect(() => {
+    if (!customer) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time prefill from the async-loaded customer, same pattern as AuthProvider's initial auth check
+    setName((v) => v || customer.name || "");
+    setPhone((v) => v || customer.phone || "");
+    setEmail((v) => v || customer.email || "");
+    setAddress((v) => v || customer.address || "");
+  }, [customer]);
 
   const coupon = getAppliedCoupon();
   const selectedPaymentMethod = options?.payment_methods.find((m) => m.id === paymentMethodId);
@@ -75,7 +85,7 @@ function CheckoutForm() {
   const discount = coupon?.discount ?? 0;
   const total = Math.max(0, (cart?.subtotal ?? 0) - discount) + shippingCharge;
 
-  const step1Complete = Boolean(name && phone && address && verifyToken);
+  const step1Complete = Boolean(name && phone && address && (authenticated || verifyToken));
 
   async function handleSendOtp() {
     if (!email) {
@@ -116,12 +126,12 @@ function CheckoutForm() {
       setError("Please fill in your name, phone, and shipping address.");
       return;
     }
-    if (!verifyToken) {
+    if (!authenticated && !verifyToken) {
       setError("Please verify your email address before continuing.");
       return;
     }
-    if (!authenticated && (!password || password !== passwordConfirmation)) {
-      setError("Please enter matching passwords.");
+    if (!authenticated && !passwordMeetsRequirements(password, passwordConfirmation)) {
+      setError("Please choose a password that meets all the requirements below.");
       return;
     }
     setActiveStep(2);
@@ -140,12 +150,16 @@ function CheckoutForm() {
     e.preventDefault();
     setError(null);
 
-    if (!verifyToken) {
+    if (!authenticated && !verifyToken) {
       setError("Please verify your email address before placing the order.");
       return;
     }
     if (!paymentMethodId || !shippingZoneId) {
       setError("Please select a payment method and shipping zone.");
+      return;
+    }
+    if (selectedPaymentMethod?.requires_transaction_id && (!transactionId || !paymentDate)) {
+      setError("Please enter the Transaction ID and payment date.");
       return;
     }
 
@@ -159,8 +173,9 @@ function CheckoutForm() {
         payment_method_id: paymentMethodId,
         shipping_zone_id: shippingZoneId,
         coupon_code: coupon?.code,
-        verify_token: verifyToken,
-        transaction_id: selectedPaymentMethod?.code && transactionId ? transactionId : undefined,
+        verify_token: verifyToken ?? undefined,
+        transaction_id: selectedPaymentMethod?.requires_transaction_id ? transactionId : undefined,
+        payment_date: selectedPaymentMethod?.requires_transaction_id ? paymentDate : undefined,
         password: authenticated ? undefined : password,
         password_confirmation: authenticated ? undefined : passwordConfirmation,
       });
@@ -181,7 +196,7 @@ function CheckoutForm() {
     }
   }
 
-  if (cartLoading || !options) {
+  if (cartLoading || !options || authLoading) {
     return <p className="mx-auto max-w-3xl px-4 py-16 text-center text-dark/60">Loading checkout...</p>;
   }
 
@@ -245,7 +260,7 @@ function CheckoutForm() {
                       onChange={(e) => setEmail(e.target.value)}
                       className="flex-1"
                     />
-                    {!verifyToken && (
+                    {!authenticated && !verifyToken && (
                       <button
                         type="button"
                         onClick={handleSendOtp}
@@ -257,7 +272,7 @@ function CheckoutForm() {
                     )}
                   </div>
 
-                  {otpSent && !verifyToken && (
+                  {!authenticated && otpSent && !verifyToken && (
                     <div className="col-span-full flex gap-2">
                       <FloatingInput
                         label="Verification code"
@@ -276,7 +291,7 @@ function CheckoutForm() {
                     </div>
                   )}
 
-                  {otpMessage && <p className="col-span-full text-sm text-success">{otpMessage}</p>}
+                  {!authenticated && otpMessage && <p className="col-span-full text-sm text-success">{otpMessage}</p>}
 
                   <FloatingTextarea
                     label="Shipping address"
@@ -303,6 +318,12 @@ function CheckoutForm() {
                         value={passwordConfirmation}
                         onChange={(e) => setPasswordConfirmation(e.target.value)}
                       />
+
+                      {password.length > 0 && (
+                        <div className="col-span-full">
+                          <PasswordRequirements password={password} confirmation={passwordConfirmation} />
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -430,14 +451,23 @@ function CheckoutForm() {
                   ))}
                 </div>
 
-                {selectedPaymentMethod && selectedPaymentMethod.code !== "cod" && selectedPaymentMethod.code !== "sslcommerz" && (
-                  <FloatingInput
-                    label="Transaction ID"
-                    required
-                    value={transactionId}
-                    onChange={(e) => setTransactionId(e.target.value)}
-                    className="mt-3"
-                  />
+                {selectedPaymentMethod?.requires_transaction_id && (
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <FloatingInput
+                      label="Transaction ID"
+                      required
+                      value={transactionId}
+                      onChange={(e) => setTransactionId(e.target.value)}
+                    />
+                    <FloatingInput
+                      label="Payment Date"
+                      type="date"
+                      required
+                      value={paymentDate}
+                      onChange={(e) => setPaymentDate(e.target.value)}
+                      max={new Date().toISOString().slice(0, 10)}
+                    />
+                  </div>
                 )}
 
                 {error && <p className="mt-3 text-sm text-danger">{error}</p>}

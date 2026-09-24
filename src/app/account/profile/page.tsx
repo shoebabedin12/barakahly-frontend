@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { FloatingInput, FloatingTextarea } from "@/components/FloatingField";
+import { PasswordRequirements, passwordMeetsRequirements } from "@/components/PasswordRequirements";
 import { ApiError } from "@/lib/api";
 import { updatePassword, updateProfile } from "@/lib/authApi";
 
@@ -126,12 +127,16 @@ export default function AccountProfilePage() {
             />
           </div>
 
+          {newPassword.length > 0 && (
+            <PasswordRequirements password={newPassword} confirmation={newPasswordConfirmation} />
+          )}
+
           {passwordError && <p className="text-sm text-danger">{passwordError}</p>}
           {passwordSuccess && <p className="text-sm text-success">{passwordSuccess}</p>}
 
           <button
             type="submit"
-            disabled={passwordSaving}
+            disabled={passwordSaving || !passwordMeetsRequirements(newPassword, newPasswordConfirmation)}
             className="w-fit rounded-lg bg-primary px-6 py-2 text-sm font-medium text-background disabled:opacity-50"
           >
             {passwordSaving ? "Updating..." : "Update Password"}

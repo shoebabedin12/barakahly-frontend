@@ -7,6 +7,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useCart } from "@/components/CartProvider";
 import { IconEnvelope, IconLock, IconPhone, IconUser } from "@/components/icons";
 import { FloatingInput, FloatingTextarea } from "@/components/FloatingField";
+import { PasswordRequirements, passwordMeetsRequirements } from "@/components/PasswordRequirements";
 import { ApiError } from "@/lib/api";
 import { register } from "@/lib/authApi";
 
@@ -92,11 +93,15 @@ export default function RegisterPage() {
             icon={IconLock}
           />
 
+          {password.length > 0 && (
+            <PasswordRequirements password={password} confirmation={passwordConfirmation} />
+          )}
+
           {error && <p className="text-sm text-danger">{error}</p>}
 
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || !passwordMeetsRequirements(password, passwordConfirmation)}
             className="w-full rounded-full bg-primary py-3 text-sm font-semibold text-background transition hover:opacity-90 disabled:opacity-50"
           >
             {submitting ? "Creating account..." : "Create Account"}

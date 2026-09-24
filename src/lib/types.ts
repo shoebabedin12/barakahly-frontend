@@ -19,6 +19,7 @@ export interface ProductColor {
   id: number;
   name: string;
   hex_code: string | null;
+  image: string | null;
 }
 
 export interface ProductSize {
@@ -146,6 +147,7 @@ export interface PaymentMethod {
   name: string;
   code: string;
   instructions: string | null;
+  requires_transaction_id: boolean;
 }
 
 export interface ShippingZone {

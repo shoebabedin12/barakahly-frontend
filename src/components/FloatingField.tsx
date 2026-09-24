@@ -17,6 +17,7 @@ export function FloatingInput({
   onChange,
   icon: Icon,
   className = "",
+  max,
 }: {
   label: string;
   type?: string;
@@ -27,6 +28,7 @@ export function FloatingInput({
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   icon?: IconComponent;
   className?: string;
+  max?: string;
 }) {
   return (
     <div className={`relative ${className}`}>
@@ -40,6 +42,7 @@ export function FloatingInput({
         autoFocus={autoFocus}
         value={value}
         onChange={onChange}
+        max={max}
         placeholder=" "
         className={`peer w-full rounded-lg border border-black/10 p-3 text-sm text-dark focus:border-primary focus:outline-none disabled:opacity-60 dark:border-white/10 dark:bg-white/5 ${
           Icon ? "pl-10" : ""
