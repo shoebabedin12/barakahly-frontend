@@ -7,16 +7,7 @@ import { getCheckoutOptions } from "@/lib/queries";
 import { ApiError } from "@/lib/api";
 import { subscribeNewsletter } from "@/lib/site";
 import type { Category, Settings } from "@/lib/types";
-import {
-  IconArrowPath,
-  IconChevronDown,
-  IconCreditCard,
-  IconEnvelope,
-  IconMapPin,
-  IconPhone,
-  IconShieldCheck,
-  IconTruck,
-} from "./icons";
+import { IconEnvelope, IconMapPin, IconPhone } from "./icons";
 
 function FacebookIcon() {
   return (
@@ -50,11 +41,28 @@ function WhatsappIcon() {
   );
 }
 
+function FooterColumn({ title, links }: { title: string; links: { label: string; href: string }[] }) {
+  if (links.length === 0) return null;
+
+  return (
+    <div>
+      <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-background/50">{title}</h4>
+      <ul className="space-y-2.5 text-sm text-background/70">
+        {links.map((link) => (
+          <li key={link.href}>
+            <Link href={link.href} className="hover:text-secondary">
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function Footer({ settings, categories }: { settings: Settings | null; categories: Category[] }) {
   const year = new Date().getFullYear();
   const hasSocial = settings?.facebook || settings?.instagram || settings?.youtube || settings?.whatsapp;
-
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
 
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -84,6 +92,8 @@ export function Footer({ settings, categories }: { settings: Settings | null; ca
       setSubmitting(false);
     }
   }
+
+  const topLevelCategories = categories.slice(0, 7);
 
   return (
     <footer className="mt-24 bg-primary text-background">
@@ -125,8 +135,8 @@ export function Footer({ settings, categories }: { settings: Settings | null; ca
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="col-span-2 lg:col-span-1">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-10 px-5 py-14 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="col-span-2 sm:col-span-3 lg:col-span-1">
           {settings?.site_logo ? (
             <div className="relative inline-flex h-12 w-32 rounded-xl bg-background/95 px-3 py-2">
               <Image
@@ -144,6 +154,27 @@ export function Footer({ settings, categories }: { settings: Settings | null; ca
           <p className="mt-3 text-sm leading-relaxed text-background/60">
             {settings?.meta_description || "Quality products, delivered across Bangladesh."}
           </p>
+
+          <ul className="mt-4 space-y-2.5 text-sm text-background/70">
+            {settings?.address && (
+              <li className="flex items-start gap-2.5">
+                <IconMapPin className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
+                <span>{settings.address}</span>
+              </li>
+            )}
+            {settings?.contact_phone && (
+              <li className="flex items-start gap-2.5">
+                <IconPhone className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
+                <a href={`tel:${settings.contact_phone}`} className="hover:text-secondary">{settings.contact_phone}</a>
+              </li>
+            )}
+            {settings?.contact_email && (
+              <li className="flex items-start gap-2.5">
+                <IconEnvelope className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
+                <a href={`mailto:${settings.contact_email}`} className="break-all hover:text-secondary">{settings.contact_email}</a>
+              </li>
+            )}
+          </ul>
 
           {hasSocial && (
             <div className="mt-5 flex items-center gap-2.5">
@@ -171,118 +202,65 @@ export function Footer({ settings, categories }: { settings: Settings | null; ca
           )}
         </div>
 
-        <div>
-          <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-background/50">Quick Links</h4>
-          <ul className="space-y-2.5 text-sm text-background/70">
-            <li><Link href="/" className="hover:text-secondary">Home</Link></li>
-            <li><Link href="/products" className="hover:text-secondary">Shop</Link></li>
-            <li><Link href="/cart" className="hover:text-secondary">Cart</Link></li>
-            <li><Link href="/contact" className="hover:text-secondary">Contact Us</Link></li>
-            <li><Link href="/blog" className="hover:text-secondary">Blog</Link></li>
-          </ul>
-        </div>
+        <FooterColumn
+          title="Information"
+          links={[
+            { label: "Home", href: "/" },
+            { label: "Contact Us", href: "/contact" },
+            { label: "Blog", href: "/blog" },
+            { label: "Privacy Policy", href: "/privacy-policy" },
+            { label: "Terms & Conditions", href: "/terms-and-conditions" },
+          ]}
+        />
 
-        <div>
-          <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-background/50">Contact Us</h4>
-          <ul className="space-y-3.5 text-sm text-background/70">
-            {settings?.contact_phone && (
-              <li className="flex items-start gap-2.5">
-                <IconPhone className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
-                <a href={`tel:${settings.contact_phone}`} className="hover:text-secondary">{settings.contact_phone}</a>
-              </li>
-            )}
-            {settings?.contact_email && (
-              <li className="flex items-start gap-2.5">
-                <IconEnvelope className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
-                <a href={`mailto:${settings.contact_email}`} className="break-all hover:text-secondary">{settings.contact_email}</a>
-              </li>
-            )}
-            {settings?.address && (
-              <li className="flex items-start gap-2.5">
-                <IconMapPin className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
-                <span>{settings.address}</span>
-              </li>
-            )}
-            {!settings?.contact_phone && !settings?.contact_email && !settings?.address && <li>Contact info coming soon.</li>}
-          </ul>
-        </div>
+        <FooterColumn
+          title="Shop By"
+          links={topLevelCategories.map((category) => ({
+            label: category.name,
+            href: `/products?category=${category.slug}`,
+          }))}
+        />
 
-        <div className="col-span-2 lg:col-span-1">
-          <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-background/50">We&apos;re Here For You</h4>
-          <ul className="space-y-3.5 text-sm text-background/70">
-            <li className="flex items-start gap-2.5">
-              <IconTruck className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
-              <span>Cash on delivery, nationwide</span>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <IconShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
-              <span>100% genuine products</span>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <IconArrowPath className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
-              <span>Easy, hassle-free returns</span>
-            </li>
-          </ul>
-        </div>
+        <FooterColumn
+          title="Support"
+          links={[
+            { label: "Contact Us", href: "/contact" },
+            { label: "My Account", href: "/account" },
+            { label: "My Orders", href: "/account/orders" },
+            { label: "Wishlist", href: "/account/wishlist" },
+          ]}
+        />
+
+        <FooterColumn
+          title="Consumer Policy"
+          links={[
+            { label: "Refund Policy", href: "/refund-policy" },
+            { label: "Terms & Conditions", href: "/terms-and-conditions" },
+            { label: "Privacy Policy", href: "/privacy-policy" },
+          ]}
+        />
       </div>
 
       {paymentMethods.length > 0 && (
         <div className="border-t border-background/10">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-5 py-6">
-            <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-background/50">
-              <IconCreditCard className="h-4 w-4" />
-              We Accept
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-6">
+            <span className="text-xs text-background/50">
+              &copy; {year} {settings?.site_name ?? "Barakahly"}. All rights reserved.
             </span>
-            {paymentMethods.map((name) => (
-              <span key={name} className="rounded-full bg-background/10 px-3.5 py-1.5 text-xs font-medium text-background/80">
-                {name}
-              </span>
-            ))}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-xs font-semibold uppercase tracking-wider text-background/50">Pay With</span>
+              {paymentMethods.map((name) => (
+                <span key={name} className="rounded-full bg-background/10 px-3.5 py-1.5 text-xs font-medium text-background/80">
+                  {name}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       )}
-
-      {categories.length > 0 && (
-        <div className="border-t border-background/10 bg-black/15">
-          <div className="mx-auto max-w-7xl px-5 py-6">
-            <button
-              type="button"
-              onClick={() => setCategoriesOpen((v) => !v)}
-              className="flex w-full items-center gap-3 text-left"
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-dark">
-                <IconChevronDown className={`h-4 w-4 transition-transform ${categoriesOpen ? "rotate-180" : ""}`} />
-              </span>
-              <h4 className="text-base font-semibold text-background">Shop by Category</h4>
-            </button>
-
-            {categoriesOpen && (
-              <div className="mt-5 rounded-2xl bg-background/5 p-5">
-                <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
-                  {categories.map((category) => (
-                    <Link
-                      key={category.id}
-                      href={`/products?category=${category.slug}`}
-                      className="truncate text-sm text-background/70 hover:text-secondary"
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="border-t border-background/10 px-5 py-10 text-center">
-        <p className="text-2xl font-bold tracking-wide text-background">{settings?.site_name ?? "Barakahly"}</p>
-      </div>
 
       <div className="border-t border-background/10 px-5 py-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-2 text-center text-xs text-background/50 sm:flex-row sm:gap-4">
-          <span>&copy; {year} {settings?.site_name ?? "Barakahly"}. All rights reserved.</span>
-          <span className="hidden sm:inline">&middot;</span>
           <Link href="/privacy-policy" className="hover:text-secondary">Privacy Policy</Link>
           <span className="hidden sm:inline">&middot;</span>
           <Link href="/terms-and-conditions" className="hover:text-secondary">Terms &amp; Conditions</Link>

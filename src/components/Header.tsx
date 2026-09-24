@@ -29,6 +29,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
   const { customer, loading: authLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const count = cart?.count ?? 0;
+  const subtotal = cart?.subtotal ?? 0;
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -123,7 +124,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-black/10 bg-white dark:border-white/10 dark:bg-gray-900">
+    <header className="sticky top-0 z-40 bg-white dark:bg-gray-900">
       <div className="h-1 bg-linear-to-r from-secondary via-secondary/40 to-secondary" />
 
       {(settings?.contact_phone || settings?.contact_email) && (
@@ -145,200 +146,63 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
         </div>
       )}
 
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-5 py-4">
-        <Link href="/" className="flex shrink-0 items-center">
-          {settings?.site_logo ? (
-            <div className="relative h-10 w-36">
-              <Image
-                src={settings.site_logo}
-                alt={settings.site_name}
-                fill
-                sizes="144px"
-                className="object-contain object-left"
-              />
-            </div>
-          ) : (
-            <span className="text-xl font-bold tracking-tight text-primary">{settings?.site_name ?? "Barakahly"}</span>
-          )}
-        </Link>
-
-        <div className="relative hidden min-w-0 flex-1 lg:block">
-
-          {showNavLeftArrow && (
-            <button
-              type="button"
-              onClick={() => scrollNavBy(-220)}
-              aria-label="Scroll navigation left"
-              className="absolute left-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background dark:border-white/10 dark:bg-gray-900"
-            >
-              <IconChevronDown className="h-3.5 w-3.5 rotate-90 text-dark" />
-            </button>
-          )}
-
-          <nav
-            ref={navScrollRef}
-            className={`hide-scrollbar flex items-center gap-6 overflow-x-auto whitespace-nowrap text-sm font-medium text-dark ${
-              showNavLeftArrow ? "pl-8" : ""
-            } ${showNavRightArrow ? "pr-8" : ""}`}
-          >
-          <Link href="/" className={`shrink-0 transition hover:text-primary ${pathname === "/" ? "text-primary" : ""}`}>
-            Home
-          </Link>
-
-          {categories.map((category) => {
-            const children = category.children ?? [];
-
-            if (children.length === 0) {
-              return (
-                <Link
-                  key={category.id}
-                  href={`/products?category=${category.slug}`}
-                  className="shrink-0 transition hover:text-primary"
-                >
-                  {category.name}
-                </Link>
-              );
-            }
-
-            const isOpen = openCategoryId === category.id;
-
-            return (
-              <div
-                key={category.id}
-                ref={(el) => {
-                  triggerRefs.current[category.id] = el;
-                }}
-                className="relative shrink-0"
-                onMouseEnter={() => openMega(category)}
-                onMouseLeave={scheduleCloseMega}
-              >
-                <Link
-                  href={`/products?category=${category.slug}`}
-                  className="flex items-center gap-1 transition hover:text-primary"
-                >
-                  {category.name}
-                  <IconChevronDown className={`h-3.5 w-3.5 transition ${isOpen ? "rotate-180" : ""}`} />
-                </Link>
-
-                {isOpen && menuPos && (
-                  <div className="fixed z-30" style={{ top: menuPos.top, left: menuPos.left, width: MEGA_MENU_WIDTH }}>
-                    <div className="rounded-2xl border border-black/10 bg-white shadow-xl dark:border-white/10 dark:bg-gray-900">
-                      <div className="flex gap-8 p-6">
-                        <div className="w-56 shrink-0 border-r border-black/10 pr-6 dark:border-white/10">
-                          <p className="mb-1 px-2 pt-1 text-xs font-semibold uppercase tracking-wider text-dark/40">{category.name}</p>
-                          <div className="flex flex-col">
-                            {children.map((child) => (
-                              <Link
-                                key={child.id}
-                                href={`/products?category=${child.slug}`}
-                                onMouseEnter={() => setPreviewCategoryId(child.id)}
-                                className={`group flex items-center gap-3 rounded-xl px-2 py-2.5 text-sm transition hover:bg-background ${
-                                  previewCategoryId === child.id ? "bg-background text-primary" : "text-dark"
-                                }`}
-                              >
-                                <span
-                                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-primary transition group-hover:bg-primary group-hover:text-background ${
-                                    previewCategoryId === child.id ? "bg-primary text-background" : ""
-                                  }`}
-                                >
-                                  <IconShoppingBag className="h-4.5 w-4.5" />
-                                </span>
-                                <span className="min-w-0 leading-snug">{child.name}</span>
-                              </Link>
-                            ))}
-                          </div>
-                          <Link
-                            href={`/products?category=${category.slug}`}
-                            className="mt-2 block border-t border-black/10 pt-3 text-center text-sm font-medium text-primary hover:underline dark:border-white/10"
-                          >
-                            View All &rarr;
-                          </Link>
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-dark/40">Popular in this category</p>
-                          {!preview && <p className="text-sm text-dark/40">Loading...</p>}
-                          {preview && preview.length === 0 && <p className="text-sm text-dark/40">No products in this category yet.</p>}
-                          {preview && preview.length > 0 && (
-                            <div className="grid grid-cols-4 gap-5">
-                              {preview.map((item) => (
-                                <Link key={item.slug} href={`/products/${item.slug}`} className="group/preview">
-                                  <div className="aspect-square overflow-hidden rounded-xl bg-background">
-                                    {item.image && (
-                                      <Image src={item.image} alt={item.name} width={120} height={120} className="h-full w-full object-cover transition duration-300 group-hover/preview:scale-105" />
-                                    )}
-                                  </div>
-                                  <p className="mt-2 truncate text-sm text-dark">{item.name}</p>
-                                  <p className="text-xs text-dark/40">{item.price} &#2547;</p>
-                                </Link>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+      {/* Row 1: logo, prominent search, account/wishlist/cart */}
+      <div className="border-b border-black/10 dark:border-white/10">
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-5 py-4">
+          <Link href="/" className="flex shrink-0 items-center">
+            {settings?.site_logo ? (
+              <div className="relative h-10 w-36">
+                <Image
+                  src={settings.site_logo}
+                  alt={settings.site_name}
+                  fill
+                  sizes="144px"
+                  className="object-contain object-left"
+                />
               </div>
-            );
-          })}
-
-          <Link href="/blog" className={`shrink-0 transition hover:text-primary ${pathname.startsWith("/blog") ? "text-primary" : ""}`}>
-            Blog
+            ) : (
+              <span className="text-xl font-bold tracking-tight text-primary">
+                {settings?.site_name ?? "Barakahly"}
+              </span>
+            )}
           </Link>
-          <Link href="/contact" className={`shrink-0 transition hover:text-primary ${pathname === "/contact" ? "text-primary" : ""}`}>
-            Contact
-          </Link>
-          </nav>
 
-          {showNavRightArrow && (
+          <div className="hidden min-w-0 flex-1 lg:block">
+            <SearchBox variant="bar" />
+          </div>
+
+          <div className="ml-auto flex shrink-0 items-center gap-1 text-dark">
             <button
               type="button"
-              onClick={() => scrollNavBy(220)}
-              aria-label="Scroll navigation right"
-              className="absolute right-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background dark:border-white/10 dark:bg-gray-900"
+              onClick={toggleTheme}
+              title="Toggle dark mode"
+              className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-background dark:hover:bg-white/10"
             >
-              <IconChevronDown className="h-3.5 w-3.5 -rotate-90 text-dark" />
+              {theme === "dark" ? <IconSun className="h-5 w-5" /> : <IconMoon className="h-5 w-5" />}
             </button>
-          )}
-        </div>
 
-        <div ref={searchRef} className="relative hidden lg:block">
-          <button
-            type="button"
-            onClick={() => setSearchOpen((v) => !v)}
-            className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-background dark:hover:bg-white/10"
-            title="Search"
-          >
-            <IconMagnifyingGlass className="h-5 w-5" />
-          </button>
+            <div ref={searchRef} className="relative lg:hidden">
+              <button
+                type="button"
+                onClick={() => setSearchOpen((v) => !v)}
+                className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-background dark:hover:bg-white/10"
+                title="Search"
+              >
+                <IconMagnifyingGlass className="h-5 w-5" />
+              </button>
 
-          {searchOpen && (
-            <div className="absolute right-0 top-full z-40 mt-2 w-md rounded-2xl border border-black/10 bg-white p-3 shadow-lg dark:border-white/10 dark:bg-gray-900">
-              <SearchBox onNavigate={() => setSearchOpen(false)} />
+              {searchOpen && (
+                <div className="absolute right-0 top-full z-40 mt-2 w-[min(90vw,26rem)] rounded-2xl border border-black/10 bg-white p-3 shadow-lg dark:border-white/10 dark:bg-gray-900">
+                  <SearchBox onNavigate={() => setSearchOpen(false)} />
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        <div className="flex shrink-0 items-center gap-1 text-dark">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            title="Toggle dark mode"
-            className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-background dark:hover:bg-white/10"
-          >
-            {theme === "dark" ? <IconSun className="h-5 w-5" /> : <IconMoon className="h-5 w-5" />}
-          </button>
-
-          {!authLoading && customer && (
-            <>
-              <Link href="/account/wishlist" title="Wishlist" className="hidden h-10 w-10 items-center justify-center rounded-full transition hover:bg-background sm:flex">
-                <IconHeart className="h-5 w-5" />
-              </Link>
-
+            {!authLoading && customer ? (
               <div className="group relative hidden sm:block">
-                <button className="flex h-10 items-center gap-1.5 rounded-full px-2 transition hover:bg-background">
+                <button className="flex h-10 items-center gap-1.5 rounded-full px-2.5 text-sm font-medium transition hover:bg-background dark:hover:bg-white/10">
                   <IconUser className="h-5 w-5" />
+                  <span className="hidden xl:inline">{customer.name.split(" ")[0]}</span>
                 </button>
                 <div className="absolute right-0 top-full z-20 hidden pt-2 group-hover:block">
                   <div className="w-48 rounded-xl border border-black/10 bg-white py-2 shadow-lg dark:border-white/10 dark:bg-gray-900">
@@ -349,36 +213,197 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                   </div>
                 </div>
               </div>
-            </>
-          )}
-
-          {!authLoading && !customer && (
-            <Link href="/login" title="Login" className="hidden h-10 w-10 items-center justify-center rounded-full transition hover:bg-background sm:flex">
-              <IconUser className="h-5 w-5" />
-            </Link>
-          )}
-
-          <button
-            type="button"
-            onClick={openCart}
-            title="Cart"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-background"
-          >
-            <IconShoppingBag className="h-5 w-5" />
-            {count > 0 && (
-              <span className="absolute right-0 top-0 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-secondary text-[10px] font-semibold text-dark">
-                {count}
-              </span>
+            ) : (
+              !authLoading && (
+                <Link
+                  href="/login"
+                  title="Sign In"
+                  className="hidden h-10 items-center gap-1.5 rounded-full px-2.5 text-sm font-medium transition hover:bg-background dark:hover:bg-white/10 sm:flex"
+                >
+                  <IconUser className="h-5 w-5" />
+                  <span className="hidden xl:inline">Sign In</span>
+                </Link>
+              )
             )}
-          </button>
 
-          <button
-            type="button"
-            onClick={() => setMobileOpen((v) => !v)}
-            className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-background lg:hidden"
+            {!authLoading && customer && (
+              <Link
+                href="/account/wishlist"
+                title="Wishlist"
+                className="hidden h-10 items-center gap-1.5 rounded-full px-2.5 transition hover:bg-background sm:flex"
+              >
+                <IconHeart className="h-5 w-5" />
+              </Link>
+            )}
+
+            <button
+              type="button"
+              onClick={openCart}
+              title="Cart"
+              className="flex h-10 items-center gap-2 rounded-full px-2.5 transition hover:bg-background"
+            >
+              <span className="relative flex h-5 w-5 items-center justify-center">
+                <IconShoppingBag className="h-5 w-5" />
+                {count > 0 && (
+                  <span className="absolute -right-1.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-secondary text-[10px] font-semibold text-dark">
+                    {count}
+                  </span>
+                )}
+              </span>
+              <span className="hidden text-sm font-semibold xl:inline">{subtotal.toFixed(2)} &#2547;</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMobileOpen((v) => !v)}
+              className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-background lg:hidden"
+            >
+              {mobileOpen ? <IconXMark className="h-5 w-5" /> : <IconBars3 className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Row 2: category quick-links on the brand color */}
+      <div className="hidden bg-primary text-background lg:block">
+        <div className="relative mx-auto max-w-7xl px-5">
+          {showNavLeftArrow && (
+            <button
+              type="button"
+              onClick={() => scrollNavBy(-220)}
+              aria-label="Scroll navigation left"
+              className="absolute left-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-primary text-background shadow-md"
+            >
+              <IconChevronDown className="h-3.5 w-3.5 rotate-90" />
+            </button>
+          )}
+
+          <nav
+            ref={navScrollRef}
+            className={`hide-scrollbar flex items-center gap-6 overflow-x-auto whitespace-nowrap py-3 text-sm font-medium ${
+              showNavLeftArrow ? "pl-8" : ""
+            } ${showNavRightArrow ? "pr-8" : ""}`}
           >
-            {mobileOpen ? <IconXMark className="h-5 w-5" /> : <IconBars3 className="h-5 w-5" />}
-          </button>
+            <Link href="/" className={`shrink-0 transition hover:text-secondary ${pathname === "/" ? "text-secondary" : ""}`}>
+              Home
+            </Link>
+
+            {categories.map((category) => {
+              const children = category.children ?? [];
+
+              if (children.length === 0) {
+                return (
+                  <Link
+                    key={category.id}
+                    href={`/products?category=${category.slug}`}
+                    className="shrink-0 transition hover:text-secondary"
+                  >
+                    {category.name}
+                  </Link>
+                );
+              }
+
+              const isOpen = openCategoryId === category.id;
+
+              return (
+                <div
+                  key={category.id}
+                  ref={(el) => {
+                    triggerRefs.current[category.id] = el;
+                  }}
+                  className="relative shrink-0"
+                  onMouseEnter={() => openMega(category)}
+                  onMouseLeave={scheduleCloseMega}
+                >
+                  <Link
+                    href={`/products?category=${category.slug}`}
+                    className="flex items-center gap-1 transition hover:text-secondary"
+                  >
+                    {category.name}
+                    <IconChevronDown className={`h-3.5 w-3.5 transition ${isOpen ? "rotate-180" : ""}`} />
+                  </Link>
+
+                  {isOpen && menuPos && (
+                    <div className="fixed z-30" style={{ top: menuPos.top, left: menuPos.left, width: MEGA_MENU_WIDTH }}>
+                      <div className="rounded-2xl border border-black/10 bg-white text-dark shadow-xl dark:border-white/10 dark:bg-gray-900 dark:text-background">
+                        <div className="flex gap-8 p-6">
+                          <div className="w-56 shrink-0 border-r border-black/10 pr-6 dark:border-white/10">
+                            <p className="mb-1 px-2 pt-1 text-xs font-semibold uppercase tracking-wider text-dark/40">{category.name}</p>
+                            <div className="flex flex-col">
+                              {children.map((child) => (
+                                <Link
+                                  key={child.id}
+                                  href={`/products?category=${child.slug}`}
+                                  onMouseEnter={() => setPreviewCategoryId(child.id)}
+                                  className={`group flex items-center gap-3 rounded-xl px-2 py-2.5 text-sm transition hover:bg-background ${
+                                    previewCategoryId === child.id ? "bg-background text-primary" : "text-dark"
+                                  }`}
+                                >
+                                  <span
+                                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-primary transition group-hover:bg-primary group-hover:text-background ${
+                                      previewCategoryId === child.id ? "bg-primary text-background" : ""
+                                    }`}
+                                  >
+                                    <IconShoppingBag className="h-4.5 w-4.5" />
+                                  </span>
+                                  <span className="min-w-0 leading-snug">{child.name}</span>
+                                </Link>
+                              ))}
+                            </div>
+                            <Link
+                              href={`/products?category=${category.slug}`}
+                              className="mt-2 block border-t border-black/10 pt-3 text-center text-sm font-medium text-primary hover:underline dark:border-white/10"
+                            >
+                              View All &rarr;
+                            </Link>
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-dark/40">Popular in this category</p>
+                            {!preview && <p className="text-sm text-dark/40">Loading...</p>}
+                            {preview && preview.length === 0 && <p className="text-sm text-dark/40">No products in this category yet.</p>}
+                            {preview && preview.length > 0 && (
+                              <div className="grid grid-cols-4 gap-5">
+                                {preview.map((item) => (
+                                  <Link key={item.slug} href={`/products/${item.slug}`} className="group/preview">
+                                    <div className="aspect-square overflow-hidden rounded-xl bg-background">
+                                      {item.image && (
+                                        <Image src={item.image} alt={item.name} width={120} height={120} className="h-full w-full object-cover transition duration-300 group-hover/preview:scale-105" />
+                                      )}
+                                    </div>
+                                    <p className="mt-2 truncate text-sm text-dark">{item.name}</p>
+                                    <p className="text-xs text-dark/40">{item.price} &#2547;</p>
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            <Link href="/blog" className={`shrink-0 transition hover:text-secondary ${pathname.startsWith("/blog") ? "text-secondary" : ""}`}>
+              Blog
+            </Link>
+            <Link href="/contact" className={`shrink-0 transition hover:text-secondary ${pathname === "/contact" ? "text-secondary" : ""}`}>
+              Contact
+            </Link>
+          </nav>
+
+          {showNavRightArrow && (
+            <button
+              type="button"
+              onClick={() => scrollNavBy(220)}
+              aria-label="Scroll navigation right"
+              className="absolute right-0 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-primary text-background shadow-md"
+            >
+              <IconChevronDown className="h-3.5 w-3.5 -rotate-90" />
+            </button>
+          )}
         </div>
       </div>
 

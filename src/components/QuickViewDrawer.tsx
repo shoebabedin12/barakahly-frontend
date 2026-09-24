@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useQuickView } from "./QuickViewProvider";
 import { useCart } from "./CartProvider";
@@ -12,8 +13,9 @@ import type { ProductDetail } from "@/lib/types";
 import { IconXMark } from "./icons";
 
 export function QuickViewDrawer() {
-  const { openSlug, closeQuickView } = useQuickView();
+  const { openSlug, intent, closeQuickView } = useQuickView();
   const { refreshCart, openCart } = useCart();
+  const router = useRouter();
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -97,7 +99,11 @@ export function QuickViewDrawer() {
       await addToCart(product.id, selectedVariant?.id, quantity);
       await refreshCart();
       closeQuickView();
-      openCart();
+      if (intent === "buy") {
+        router.push("/checkout");
+      } else {
+        openCart();
+      }
     } catch (err) {
       setSubmitError(err instanceof ApiError ? err.message : "Could not add to cart.");
     } finally {
@@ -225,22 +231,22 @@ export function QuickViewDrawer() {
                 )}
 
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center rounded-full border border-black/15 dark:border-white/20">
+                  <div className="flex items-center overflow-hidden rounded-full border border-black/10 bg-background dark:border-white/15 dark:bg-white/5">
                     <button
                       type="button"
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                       disabled={quantity <= 1}
-                      className="h-10 w-10 cursor-pointer text-lg disabled:cursor-not-allowed disabled:opacity-30"
+                      className="flex h-11 w-11 cursor-pointer items-center justify-center text-lg font-medium text-dark transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-30 dark:hover:bg-white/10"
                       aria-label="Decrease quantity"
                     >
                       &minus;
                     </button>
-                    <span className="w-8 text-center">{quantity}</span>
+                    <span className="w-10 text-center text-base font-semibold text-primary">{quantity}</span>
                     <button
                       type="button"
                       onClick={() => setQuantity((q) => Math.min(stock || 1, q + 1))}
                       disabled={quantity >= stock}
-                      className="h-10 w-10 cursor-pointer text-lg disabled:cursor-not-allowed disabled:opacity-30"
+                      className="flex h-11 w-11 cursor-pointer items-center justify-center text-lg font-medium text-dark transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-30 dark:hover:bg-white/10"
                       aria-label="Increase quantity"
                     >
                       +
@@ -253,7 +259,7 @@ export function QuickViewDrawer() {
                     disabled={!canAddToCart || submitting}
                     className="flex-1 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-background disabled:opacity-50"
                   >
-                    {submitting ? "Adding..." : "Add to Cart"}
+                    {submitting ? "Please wait..." : intent === "buy" ? "Buy Now" : "Add to Cart"}
                   </button>
                 </div>
 

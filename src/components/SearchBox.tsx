@@ -8,7 +8,15 @@ import { getSearchSuggestions } from "@/lib/queries";
 import type { SearchSuggestion } from "@/lib/types";
 import { IconMagnifyingGlass, IconXMark } from "./icons";
 
-export function SearchBox({ className, onNavigate }: { className?: string; onNavigate?: () => void }) {
+export function SearchBox({
+  className,
+  onNavigate,
+  variant = "default",
+}: {
+  className?: string;
+  onNavigate?: () => void;
+  variant?: "default" | "bar";
+}) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchSuggestion[] | null>(null);
@@ -56,31 +64,65 @@ export function SearchBox({ className, onNavigate }: { className?: string; onNav
   return (
     <div ref={containerRef} className={`relative ${className ?? ""}`}>
       <form onSubmit={handleSubmit} autoComplete="off">
-        <div className="flex items-center rounded-full border border-black/10 bg-background/60 px-4 py-2 transition focus-within:border-primary dark:border-white/10">
-          <IconMagnifyingGlass className="h-4 w-4 shrink-0 text-dark/40" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => results && setOpen(true)}
-            placeholder="Search products..."
-            className="w-full bg-transparent px-3 text-sm text-dark placeholder:text-dark/40 focus:outline-none"
-          />
-          {query && (
+        {variant === "bar" ? (
+          <div className="flex items-center overflow-hidden rounded-full border border-black/10 bg-background/60 transition focus-within:border-primary dark:border-white/10">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => results && setOpen(true)}
+              placeholder="Search in..."
+              className="w-full bg-transparent py-2.5 pl-5 pr-2 text-sm text-dark placeholder:text-dark/40 focus:outline-none"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  setResults(null);
+                  setOpen(false);
+                }}
+                className="shrink-0 p-1 text-dark/40 hover:text-dark"
+                title="Clear search"
+              >
+                <IconXMark className="h-4 w-4" />
+              </button>
+            )}
             <button
-              type="button"
-              onClick={() => {
-                setQuery("");
-                setResults(null);
-                setOpen(false);
-              }}
-              className="shrink-0 rounded-full p-1 text-dark/40 hover:text-dark"
-              title="Clear search"
+              type="submit"
+              className="m-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary text-dark transition hover:opacity-90"
+              title="Search"
             >
-              <IconXMark className="h-4 w-4" />
+              <IconMagnifyingGlass className="h-4 w-4" />
             </button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex items-center rounded-full border border-black/10 bg-background/60 px-4 py-2 transition focus-within:border-primary dark:border-white/10">
+            <IconMagnifyingGlass className="h-4 w-4 shrink-0 text-dark/40" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => results && setOpen(true)}
+              placeholder="Search products..."
+              className="w-full bg-transparent px-3 text-sm text-dark placeholder:text-dark/40 focus:outline-none"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  setResults(null);
+                  setOpen(false);
+                }}
+                className="shrink-0 rounded-full p-1 text-dark/40 hover:text-dark"
+                title="Clear search"
+              >
+                <IconXMark className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        )}
       </form>
 
       {open && results && (

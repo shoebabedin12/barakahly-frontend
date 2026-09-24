@@ -6,6 +6,7 @@ import { useCart } from "./CartProvider";
 import { addToCart } from "@/lib/cart";
 import { ApiError } from "@/lib/api";
 import { recordRecentlyViewed } from "@/lib/recentlyViewed";
+import { IconCheckCircle, IconChevronDown } from "./icons";
 import type { ProductDetail as ProductDetailType } from "@/lib/types";
 
 export function ProductDetail({ product }: { product: ProductDetailType }) {
@@ -18,7 +19,9 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
   const [colorId, setColorId] = useState<number | null>(product.colors[0]?.id ?? null);
   const [sizeId, setSizeId] = useState<number | null>(product.sizes[0]?.id ?? null);
   const [quantity, setQuantity] = useState(1);
-  const [activeImage, setActiveImage] = useState(0);
+  // null = follow the selected color/variant's own image; a number = the visitor
+  // explicitly picked a thumbnail or nav arrow, which overrides that until the color changes again.
+  const [manualImage, setManualImage] = useState<number | null>(null);
   const [status, setStatus] = useState<{ type: "idle" | "success" | "error"; message?: string }>({
     type: "idle",
   });
@@ -36,6 +39,18 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
       ) ?? null
     );
   }, [hasVariants, product.variants, product.colors.length, product.sizes.length, colorId, sizeId]);
+
+  const selectedColor = useMemo(
+    () => product.colors.find((color) => color.id === colorId) ?? null,
+    [product.colors, colorId]
+  );
+
+  // A size-specific variant photo wins over the color's own photo, which wins over the gallery order.
+  const colorImage = selectedVariant?.image ?? selectedColor?.image ?? null;
+  const colorImageIndex = colorImage ? product.images.indexOf(colorImage) : -1;
+  const activeImage =
+    manualImage ?? (colorImage ? (colorImageIndex >= 0 ? colorImageIndex : -1) : 0);
+  const mainImage = manualImage !== null ? product.images[manualImage] : colorImage ?? product.images[0];
 
   const price = selectedVariant?.price ?? product.discount_price ?? product.price;
   const originalPrice = selectedVariant?.price ? null : product.discount_price ? product.price : null;
@@ -63,35 +78,68 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
 
   return (
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 md:grid-cols-2">
-      <div>
-        <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-black/5 dark:bg-white/5">
-          {product.images[activeImage] && (
-            <Image
-              src={product.images[activeImage]}
-              alt={product.name}
-              fill
-              sizes="(min-width: 768px) 50vw, 100vw"
-              className="object-cover"
-              priority
-            />
-          )}
-        </div>
-
+      <div className="flex gap-4">
         {product.images.length > 1 && (
-          <div className="mt-3 flex gap-2">
+          <div className="flex shrink-0 flex-col gap-3">
             {product.images.map((image, index) => (
               <button
                 key={image}
-                onClick={() => setActiveImage(index)}
-                className={`relative h-16 w-16 overflow-hidden rounded-lg border-2 ${
-                  index === activeImage ? "border-primary" : "border-transparent"
+                onClick={() => setManualImage(index)}
+                className={`relative h-16 w-16 overflow-hidden rounded-lg border-2 transition sm:h-20 sm:w-20 ${
+                  index === activeImage
+                    ? "border-secondary"
+                    : "border-black/10 hover:border-black/30 dark:border-white/10"
                 }`}
               >
-                <Image src={image} alt="" fill className="object-cover" />
+                <Image src={image} alt="" fill sizes="80px" className="object-cover" />
+                {index === activeImage && (
+                  <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-dark">
+                    <IconCheckCircle className="h-3 w-3" />
+                  </span>
+                )}
               </button>
             ))}
           </div>
         )}
+
+        <div className="relative aspect-square w-full flex-1 overflow-hidden rounded-xl bg-black/5 dark:bg-white/5">
+          {mainImage && (
+            <Image
+              key={mainImage}
+              src={mainImage}
+              alt={product.name}
+              fill
+              sizes="(min-width: 768px) 50vw, 100vw"
+              className="object-contain"
+              priority
+            />
+          )}
+
+          {product.images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() =>
+                  setManualImage(
+                    (Math.max(activeImage, 0) - 1 + product.images.length) % product.images.length
+                  )
+                }
+                aria-label="Previous image"
+                className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-dark shadow-md transition hover:bg-white dark:bg-gray-900/90 dark:text-background"
+              >
+                <IconChevronDown className="h-4 w-4 rotate-90" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setManualImage((Math.max(activeImage, 0) + 1) % product.images.length)}
+                aria-label="Next image"
+                className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-dark shadow-md transition hover:bg-white dark:bg-gray-900/90 dark:text-background"
+              >
+                <IconChevronDown className="h-4 w-4 -rotate-90" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       <div>
@@ -117,7 +165,10 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
               {product.colors.map((color) => (
                 <button
                   key={color.id}
-                  onClick={() => setColorId(color.id)}
+                  onClick={() => {
+                    setColorId(color.id);
+                    setManualImage(null);
+                  }}
                   className={`h-9 rounded-full border px-4 text-sm ${
                     colorId === color.id
                       ? "border-primary bg-primary text-background"
@@ -162,20 +213,20 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
           )}
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center rounded-full border border-black/15 dark:border-white/20">
+            <div className="flex items-center overflow-hidden rounded-full border border-black/10 bg-background dark:border-white/15 dark:bg-white/5">
               <button
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                 disabled={quantity <= 1}
-                className="h-10 w-10 cursor-pointer text-lg disabled:cursor-not-allowed disabled:opacity-30"
+                className="flex h-11 w-11 cursor-pointer items-center justify-center text-lg font-medium text-dark transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-30 dark:hover:bg-white/10"
                 aria-label="Decrease quantity"
               >
                 &minus;
               </button>
-              <span className="w-8 text-center">{quantity}</span>
+              <span className="w-10 text-center text-base font-semibold text-primary">{quantity}</span>
               <button
                 onClick={() => setQuantity((q) => Math.min(stock || 1, q + 1))}
                 disabled={quantity >= stock}
-                className="h-10 w-10 cursor-pointer text-lg disabled:cursor-not-allowed disabled:opacity-30"
+                className="flex h-11 w-11 cursor-pointer items-center justify-center text-lg font-medium text-dark transition hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-30 dark:hover:bg-white/10"
                 aria-label="Increase quantity"
               >
                 +

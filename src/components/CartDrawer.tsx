@@ -117,21 +117,21 @@ export function CartDrawer() {
                     <p className="mt-0.5 text-sm font-semibold text-primary">{item.unit_price.toFixed(0)} &#2547;</p>
 
                     <div className="mt-auto flex items-center justify-between pt-1">
-                      <div className="flex items-center rounded-full border border-black/15 dark:border-white/20">
+                      <div className="flex items-center overflow-hidden rounded-full border border-black/10 bg-background dark:border-white/15 dark:bg-white/5">
                         <button
                           type="button"
                           onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                           disabled={busyItemId === item.id || item.quantity <= 1}
-                          className="h-7 w-7 text-sm disabled:opacity-40"
+                          className="flex h-7 w-7 items-center justify-center text-sm font-medium text-dark transition hover:bg-black/5 disabled:opacity-40 dark:hover:bg-white/10"
                         >
                           &minus;
                         </button>
-                        <span className="w-5 text-center text-xs">{item.quantity}</span>
+                        <span className="w-6 text-center text-xs font-semibold text-primary">{item.quantity}</span>
                         <button
                           type="button"
                           onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                           disabled={busyItemId === item.id || item.quantity >= item.max_stock}
-                          className="h-7 w-7 text-sm disabled:opacity-40"
+                          className="flex h-7 w-7 items-center justify-center text-sm font-medium text-dark transition hover:bg-black/5 disabled:opacity-40 dark:hover:bg-white/10"
                         >
                           +
                         </button>

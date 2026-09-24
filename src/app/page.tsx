@@ -1,24 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CategoryCarousel } from "@/components/CategoryCarousel";
-import { ProductCard } from "@/components/ProductCard";
+import { CategoryProductRow } from "@/components/CategoryProductRow";
+import { TopSellingProductCard } from "@/components/TopSellingProductCard";
 import { getHome } from "@/lib/queries";
-import type { ProductListItem } from "@/lib/types";
-
-function ProductSection({ title, products }: { title: string; products: ProductListItem[] }) {
-  if (products.length === 0) return null;
-
-  return (
-    <section className="mx-auto max-w-[100rem] px-3 py-4">
-      <h2 className="mb-4 text-xl font-semibold text-dark">{title}</h2>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-    </section>
-  );
-}
 
 export default async function HomePage() {
   const home = await getHome();
@@ -30,7 +15,7 @@ export default async function HomePage() {
           <div className="overflow-hidden rounded-2xl">
             {home.banners.slice(0, 1).map((banner) => (
               <Link key={banner.id} href={banner.button_link ?? "/products"} className="block">
-                <div className="relative aspect-[16/6] w-full bg-primary">
+                <div className="relative aspect-16/6 w-full bg-primary">
                   <Image src={banner.image} alt={banner.title ?? ""} fill className="object-cover" priority />
                   <div className="absolute inset-0 flex flex-col justify-center gap-2 bg-black/30 p-8 text-background">
                     {banner.title && <h1 className="text-2xl font-bold sm:text-4xl">{banner.title}</h1>}
@@ -64,9 +49,30 @@ export default async function HomePage() {
         </section>
       )}
 
-      <ProductSection title="Flash deals" products={home.flash_deals} />
-      <ProductSection title="Featured products" products={home.featured_products} />
-      <ProductSection title="Best sellers" products={home.best_sellers} />
+      {home.best_sellers.length > 0 && (
+        <section className="mx-auto max-w-[100rem] px-3 py-6">
+          <h2 className="mb-6 text-center text-2xl font-bold text-dark sm:text-3xl">Top Selling Products</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {home.best_sellers.slice(0, 4).map((product) => (
+              <TopSellingProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <CategoryProductRow
+        title="Flash Deals"
+        viewAllHref="/products"
+        products={home.flash_deals}
+        firstItemBadge="Hot Deal"
+      />
+
+      <CategoryProductRow
+        title="Featured Products"
+        viewAllHref="/products"
+        products={home.featured_products}
+        firstItemBadge="New Arrival"
+      />
     </div>
   );
 }

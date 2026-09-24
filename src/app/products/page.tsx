@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ProductCard } from "@/components/ProductCard";
-import { ProductFilters } from "@/components/ProductFilters";
+import { SimpleProductCard } from "@/components/SimpleProductCard";
+import { ProductFilters, ProductSortDropdown } from "@/components/ProductFilters";
+import { IconChevronDown } from "@/components/icons";
 import { getBrands, getCategories, getProducts } from "@/lib/queries";
 
 interface ProductsPageProps {
@@ -27,7 +28,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       max_price: params.max_price ? Number(params.max_price) : undefined,
       sort: params.sort as never,
       page: params.page ? Number(params.page) : undefined,
-      per_page: 24,
+      per_page: 16,
     }),
     getCategories(),
     getBrands(),
@@ -57,15 +58,17 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   return (
     <div className="mx-auto max-w-[100rem] px-6 py-10">
-      <nav className="mb-4 text-sm text-dark/40">
-        <Link href="/" className="hover:text-primary">Home</Link>
-        <span className="mx-1">/</span>
-        <span className="text-dark">{activeCategory ? activeCategory.name : "Shop"}</span>
-      </nav>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-3xl font-bold text-dark">{activeCategory ? activeCategory.name : "Shop All"}</h1>
 
-      <h1 className="text-3xl font-bold text-dark">{activeCategory ? activeCategory.name : "Shop All"}</h1>
+        <nav className="text-sm text-dark/40">
+          <Link href="/" className="hover:text-primary">Home</Link>
+          <span className="mx-1.5">&rsaquo;</span>
+          <span className="text-dark">{activeCategory ? activeCategory.name : "Shop"}</span>
+        </nav>
+      </div>
 
-      <div className="mt-8">
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
         <ProductFilters
           categories={categories}
           brands={brands}
@@ -80,38 +83,66 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           }}
           hasActiveFilters={hasActiveFilters}
         />
-      </div>
 
-      <div className="mt-8">
-        <p className="mb-6 text-sm text-dark/40">{result.meta.total} products found</p>
-
-        {result.data.length === 0 ? (
-          <p className="text-dark/40">No products found matching your filters.</p>
-        ) : (
-          <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {result.data.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+        <div className="min-w-0 flex-1">
+          <div className="mb-6 flex items-center justify-between">
+            <ProductSortDropdown current={{ sort: params.sort }} />
           </div>
-        )}
 
-        {result.meta.last_page > 1 && (
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-            {Array.from({ length: result.meta.last_page }, (_, i) => i + 1).map((page) => (
-              <Link
-                key={page}
-                href={buildHref(page)}
-                className={`h-9 min-w-9 rounded-full px-3 text-center text-sm leading-9 ${
-                  page === result.meta.current_page
-                    ? "bg-primary text-background"
-                    : "border border-black/10 dark:border-white/10"
-                }`}
-              >
-                {page}
-              </Link>
-            ))}
-          </div>
-        )}
+          {result.data.length === 0 ? (
+            <p className="text-dark/40">No products found matching your filters.</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {result.data.map((product) => (
+                <SimpleProductCard key={product.id} product={product} fixedWidth={false} />
+              ))}
+            </div>
+          )}
+
+          {result.meta.last_page > 1 && (
+            <div className="mt-10 flex flex-col items-center gap-3">
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {result.meta.current_page > 1 && (
+                  <Link
+                    href={buildHref(result.meta.current_page - 1)}
+                    aria-label="Previous page"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 dark:border-white/10"
+                  >
+                    <IconChevronDown className="h-3.5 w-3.5 rotate-90" />
+                  </Link>
+                )}
+
+                {Array.from({ length: result.meta.last_page }, (_, i) => i + 1).map((page) => (
+                  <Link
+                    key={page}
+                    href={buildHref(page)}
+                    className={`h-9 min-w-9 rounded-full px-3 text-center text-sm leading-9 ${
+                      page === result.meta.current_page
+                        ? "bg-primary text-background"
+                        : "border border-black/10 dark:border-white/10"
+                    }`}
+                  >
+                    {page}
+                  </Link>
+                ))}
+
+                {result.meta.current_page < result.meta.last_page && (
+                  <Link
+                    href={buildHref(result.meta.current_page + 1)}
+                    aria-label="Next page"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 dark:border-white/10"
+                  >
+                    <IconChevronDown className="h-3.5 w-3.5 -rotate-90" />
+                  </Link>
+                )}
+              </div>
+
+              <p className="text-sm text-dark/40">
+                Showing {result.meta.from ?? 0} - {result.meta.to ?? 0} of {result.meta.total} results
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
