@@ -280,3 +280,15 @@ export function IconHome({ className }: IconProps) {
     </Icon>
   );
 }
+
+export function IconFingerprint({ className }: IconProps) {
+  return (
+    <Icon className={className}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M7.864 4.243A9.75 9.75 0 0 1 21.75 12v1.5M12 4.5A7.5 7.5 0 0 0 4.5 12v1.157M12 7.5a4.5 4.5 0 0 0-4.5 4.5v1.157M15 9.75A3 3 0 0 0 9 12v.157M12 12v3.75m-3 3.409A11.204 11.204 0 0 1 5.25 12M15 16.5a3 3 0 0 1-3 3M18.75 12v1.157a6.75 6.75 0 0 1-3.181 5.726"
+      />
+    </Icon>
+  );
+}
