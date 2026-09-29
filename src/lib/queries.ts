@@ -1,9 +1,8 @@
 import { apiGet } from "./api";
 import type {
-  BlogPostDetail,
-  BlogPostSummary,
   Brand,
   Category,
+  CategoryLanding,
   CheckoutOptions,
   HomeData,
   Order,
@@ -88,12 +87,19 @@ export function getSearchSuggestions(query: string) {
   return apiGet<SearchSuggestion[]>(`/api/v1/search/suggestions?q=${encodeURIComponent(query)}`);
 }
 
-export function getBlogPosts(page = 1) {
-  return apiGet<Paginated<BlogPostSummary>>(`/api/v1/blog?page=${page}`, { next: { revalidate: 120 } });
-}
-
-export function getBlogPost(slug: string) {
-  return apiGet<{ data: BlogPostDetail }>(`/api/v1/blog/${slug}`, { next: { revalidate: 120 } }).then(
-    (res) => res.data
-  );
+/** A category's custom landing design, served by the NestJS API (not
+ * Laravel). Resolves to null when the category has no live design - or when
+ * that API is unreachable - so the plain category page still renders. */
+export async function getCategoryLanding(slug: string): Promise<CategoryLanding | null> {
+  const base = process.env.NEST_API_URL ?? "http://127.0.0.1:4000";
+  try {
+    const res = await fetch(`${base}/api/v1/categories/${encodeURIComponent(slug)}/landing`, {
+      headers: { Accept: "application/json" },
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    return ((await res.json()) as { data: CategoryLanding }).data;
+  } catch {
+    return null;
+  }
 }

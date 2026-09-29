@@ -386,9 +386,6 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
               );
             })}
 
-            <Link href="/blog" className={`shrink-0 transition hover:text-secondary ${pathname.startsWith("/blog") ? "text-secondary" : ""}`}>
-              Blog
-            </Link>
             <Link href="/contact" className={`shrink-0 transition hover:text-secondary ${pathname === "/contact" ? "text-secondary" : ""}`}>
               Contact
             </Link>
@@ -414,7 +411,6 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
           <nav className="flex flex-col gap-1 text-sm font-medium">
             <Link href="/" className="rounded-lg px-2 py-2 hover:bg-background">Home</Link>
             <Link href="/cart" className="rounded-lg px-2 py-2 hover:bg-background">Cart</Link>
-            <Link href="/blog" className="rounded-lg px-2 py-2 hover:bg-background">Blog</Link>
             <Link href="/contact" className="rounded-lg px-2 py-2 hover:bg-background">Contact</Link>
 
             {categories.length > 0 && (

@@ -3,7 +3,10 @@ import type { ApiErrorBody } from "./types";
 
 const SERVER_BASE_URL =
   process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
-const BROWSER_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+// Empty by default: the browser calls /api/v1/* on the storefront's own origin,
+// which next.config.ts rewrites to Laravel. Set NEXT_PUBLIC_API_URL only to
+// bypass the proxy and call the API directly.
+const BROWSER_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export class ApiError extends Error {
   status: number;

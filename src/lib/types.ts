@@ -231,18 +231,43 @@ export interface SearchSuggestion {
   price: string;
 }
 
-export interface BlogPostSummary {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt: string | null;
-  featured_image: string | null;
-  published_at: string | null;
-}
+export type LandingIconName =
+  | "truck"
+  | "shield"
+  | "star"
+  | "gift"
+  | "leaf"
+  | "sparkles"
+  | "heart"
+  | "bolt"
+  | "home"
+  | "book"
+  | "tag"
+  | "clock";
 
-export interface BlogPostDetail extends BlogPostSummary {
-  content: string;
-  meta_title: string | null;
-  meta_description: string | null;
-  related_posts: BlogPostSummary[];
+/** GET /api/v1/categories/:slug/landing on barakahly-api (NestJS). */
+export interface CategoryLanding {
+  category: { id: number; name: string; slug: string; description: string | null; productCount: number };
+  theme: { accent: string; soft: string; ink: string; pattern: "none" | "dots" | "grid" | "arches" | "waves" };
+  hero: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    ctaLabel: string;
+    imageUrl: string | null;
+    collage: string[];
+  };
+  highlights: { enabled: boolean; items: { icon: LandingIconName; title: string; text: string }[] };
+  featured: { enabled: boolean; title: string; subtitle: string; products: ProductListItem[] };
+  promo: {
+    enabled: boolean;
+    eyebrow: string;
+    title: string;
+    text: string;
+    ctaLabel: string;
+    ctaHref: string;
+    imageUrl: string | null;
+  };
+  story: { enabled: boolean; title: string; text: string };
+  subcategories: { id: number; name: string; slug: string }[];
 }

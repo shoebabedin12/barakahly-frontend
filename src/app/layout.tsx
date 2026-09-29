@@ -36,7 +36,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   ]);
 
   return (
-    <html lang="en" className={`${plusJakartaSans.variable} h-full antialiased`}>
+    // THEME_INIT_SCRIPT adds the dark/light class to <html> before hydration,
+    // so its className intentionally differs from the server render.
+    <html lang="en" className={`${plusJakartaSans.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

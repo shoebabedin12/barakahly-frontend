@@ -207,7 +207,6 @@ export function Footer({ settings, categories }: { settings: Settings | null; ca
           links={[
             { label: "Home", href: "/" },
             { label: "Contact Us", href: "/contact" },
-            { label: "Blog", href: "/blog" },
             { label: "Privacy Policy", href: "/privacy-policy" },
             { label: "Terms & Conditions", href: "/terms-and-conditions" },
           ]}

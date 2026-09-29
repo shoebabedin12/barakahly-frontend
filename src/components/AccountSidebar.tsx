@@ -6,14 +6,25 @@ import { useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { useCart } from "./CartProvider";
 import { logout } from "@/lib/authApi";
-import { IconHeart, IconLogout, IconShoppingBag, IconSquares, IconUserCircle } from "./icons";
+import { IconHeart, IconLock, IconLogout, IconShoppingBag, IconSquares, IconUser } from "./icons";
 
 const NAV_ITEMS = [
+  { href: "/account/profile", label: "My Account", icon: IconUser },
   { href: "/account", label: "Dashboard", icon: IconSquares },
   { href: "/account/orders", label: "My Orders", icon: IconShoppingBag },
-  { href: "/account/wishlist", label: "Wishlist", icon: IconHeart },
-  { href: "/account/profile", label: "Profile Settings", icon: IconUserCircle },
+  { href: "/account/wishlist", label: "My Wishlist", icon: IconHeart },
+  { href: "/account/password", label: "Change Password", icon: IconLock },
 ];
+
+export function AccountAvatar({ name, className = "" }: { name: string; className?: string }) {
+  return (
+    <div
+      className={`flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-secondary to-primary font-bold text-white ${className}`}
+    >
+      {name.trim().charAt(0).toUpperCase()}
+    </div>
+  );
+}
 
 export function AccountSidebar() {
   const pathname = usePathname();
@@ -36,47 +47,43 @@ export function AccountSidebar() {
   }
 
   return (
-    <div className="md:col-span-1">
-      <div className="overflow-hidden rounded-2xl border border-black/10 bg-white dark:border-white/10 dark:bg-white/5">
-        {customer && (
-          <div className="flex items-center gap-3 border-b border-black/10 bg-background px-5 py-5 dark:border-white/10">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-semibold text-background">
-              {customer.name.charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-dark">{customer.name}</p>
-              <p className="truncate text-xs text-dark/60">{customer.phone}</p>
-            </div>
+    <aside className="flex flex-col gap-6 md:col-span-1">
+      {customer && (
+        <div className="flex items-center gap-4 rounded-sm bg-white px-6 py-5 dark:bg-white/5">
+          <AccountAvatar name={customer.name} className="h-14 w-14 text-xl" />
+          <div className="min-w-0">
+            <p className="text-sm text-dark/60">Hello</p>
+            <p className="text-lg font-bold leading-snug break-words text-dark">{customer.name}</p>
           </div>
-        )}
+        </div>
+      )}
 
-        <nav className="p-2">
-          {NAV_ITEMS.map((item) => {
-            const isActive = item.href === "/account" ? pathname === "/account" : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition ${
-                  isActive ? "bg-primary text-background" : "text-dark hover:bg-background dark:hover:bg-white/10"
-                }`}
-              >
-                <item.icon className={`h-5 w-5 shrink-0 ${isActive ? "text-background" : "text-primary"}`} />
-                {item.label}
-              </Link>
-            );
-          })}
+      <nav className="flex flex-col overflow-hidden rounded-sm bg-white dark:bg-white/5">
+        {NAV_ITEMS.map((item) => {
+          const isActive = item.href === "/account" ? pathname === "/account" : pathname.startsWith(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3.5 border-b border-black/10 px-6 py-5 text-[15px] font-medium transition last:border-b-0 dark:border-white/10 ${
+                isActive ? "bg-primary text-white" : "text-dark hover:bg-background dark:hover:bg-white/10"
+              }`}
+            >
+              <item.icon className="h-5 w-5 shrink-0" />
+              {item.label}
+            </Link>
+          );
+        })}
 
-          <button
-            onClick={handleSignOut}
-            disabled={signingOut}
-            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm font-medium text-danger transition hover:bg-danger/5 disabled:opacity-50"
-          >
-            <IconLogout className="h-5 w-5 shrink-0" />
-            {signingOut ? "Signing out..." : "Logout"}
-          </button>
-        </nav>
-      </div>
-    </div>
+        <button
+          onClick={handleSignOut}
+          disabled={signingOut}
+          className="flex items-center gap-3.5 px-6 py-5 text-left text-[15px] font-medium text-danger transition hover:bg-danger/5 disabled:opacity-50"
+        >
+          <IconLogout className="h-5 w-5 shrink-0" />
+          {signingOut ? "Signing out..." : "Logout"}
+        </button>
+      </nav>
+    </aside>
   );
 }

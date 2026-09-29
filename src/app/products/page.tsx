@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { CategoryLandingStory, CategoryLandingTop } from "@/components/CategoryLanding";
 import { SimpleProductCard } from "@/components/SimpleProductCard";
 import { ProductFilters, ProductSortDropdown } from "@/components/ProductFilters";
 import { IconChevronDown } from "@/components/icons";
-import { getBrands, getCategories, getProducts } from "@/lib/queries";
+import { getBrands, getCategories, getCategoryLanding, getProducts } from "@/lib/queries";
 
 interface ProductsPageProps {
   searchParams: Promise<{
@@ -34,6 +35,18 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     getBrands(),
   ]);
 
+  // A category's landing design shows on its plain first page only; once the
+  // shopper filters, sorts or pages, they just want the grid.
+  const showLanding =
+    params.category &&
+    !params.search &&
+    !params.brand &&
+    !params.min_price &&
+    !params.max_price &&
+    !params.sort &&
+    (!params.page || params.page === "1");
+  const landing = showLanding ? await getCategoryLanding(params.category!) : null;
+
   const hasActiveFilters = Boolean(
     params.search || params.category || params.brand || params.min_price || params.max_price
   );
@@ -58,7 +71,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   return (
     <div className="mx-auto max-w-[100rem] px-6 py-10">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
+      {landing && (
+        <div className="mb-8">
+          <CategoryLandingTop landing={landing} />
+        </div>
+      )}
+
+      <div className={`mb-6 flex flex-wrap items-center justify-between gap-2 ${landing ? "hidden" : ""}`}>
         <h1 className="text-3xl font-bold text-dark">{activeCategory ? activeCategory.name : "Shop All"}</h1>
 
         <nav className="text-sm text-dark/40">
@@ -144,6 +163,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           )}
         </div>
       </div>
+
+      {landing && <CategoryLandingStory landing={landing} />}
     </div>
   );
 }

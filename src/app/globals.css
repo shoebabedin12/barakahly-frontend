@@ -28,3 +28,15 @@ body {
   background: var(--color-background);
   color: var(--color-dark);
 }
+
+/* Category landing pages: --lp-accent/--lp-soft/--lp-ink come from the
+   admin-chosen theme (inline style); dark mode derives deeper tints. */
+.category-landing {
+  --lp-bg: var(--lp-soft);
+  --lp-heading: var(--lp-ink);
+}
+
+.dark .category-landing {
+  --lp-bg: color-mix(in srgb, var(--lp-accent) 20%, #171612);
+  --lp-heading: color-mix(in srgb, var(--lp-accent) 30%, #f3f1ea);
+}
