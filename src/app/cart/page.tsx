@@ -189,7 +189,7 @@ export default function CartPage() {
         </div>
 
         <div className="lg:col-span-1">
-          <div className="sticky top-24 rounded-xl border border-black/10 p-4 dark:border-white/10">
+          <div className="sticky-below-header rounded-xl border border-black/10 p-4 dark:border-white/10">
             {coupon ? (
               <div className="mb-4 flex items-center justify-between text-sm">
                 <span>

@@ -40,6 +40,7 @@ export async function placeOrder(payload: PlaceOrderPayload) {
     setToken(response.token);
   }
 
+  rememberPlacedOrder(response.order);
   return response.order;
 }
 
@@ -52,4 +53,28 @@ export async function initSslcommerzPayment(orderId: number) {
 
 export function currentGuestToken() {
   return getGuestToken();
+}
+
+const placedOrderKey = (id: number | string) => `barakahly:placed-order:${id}`;
+
+/**
+ * Keeps the just-placed order for the confirmation page. A guest who orders
+ * with the phone of an existing account isn't signed in to it (so they can't
+ * fetch the order), but should still see their confirmation.
+ */
+function rememberPlacedOrder(order: Order) {
+  try {
+    sessionStorage.setItem(placedOrderKey(order.id), JSON.stringify(order));
+  } catch {
+    // storage unavailable - the page falls back to fetching the order
+  }
+}
+
+export function getPlacedOrder(id: number | string): Order | null {
+  try {
+    const raw = sessionStorage.getItem(placedOrderKey(id));
+    return raw ? (JSON.parse(raw) as Order) : null;
+  } catch {
+    return null;
+  }
 }

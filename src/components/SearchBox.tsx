@@ -12,10 +12,13 @@ export function SearchBox({
   className,
   onNavigate,
   variant = "default",
+  autoFocus = false,
 }: {
   className?: string;
   onNavigate?: () => void;
   variant?: "default" | "bar";
+  /** Focus the input on mount (the mobile search panel opens straight into typing). */
+  autoFocus?: boolean;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -105,7 +108,10 @@ export function SearchBox({
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => results && setOpen(true)}
               placeholder="Search products..."
-              className="w-full bg-transparent px-3 text-sm text-dark placeholder:text-dark/40 focus:outline-none"
+              autoFocus={autoFocus}
+              enterKeyHint="search"
+              // 16px on phones - smaller inputs make iOS Safari zoom the page on focus.
+              className="w-full min-w-0 bg-transparent px-3 text-base text-dark placeholder:text-dark/40 focus:outline-none sm:text-sm"
             />
             {query && (
               <button
@@ -126,7 +132,7 @@ export function SearchBox({
       </form>
 
       {open && results && (
-        <div className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-lg dark:border-white/10 dark:bg-gray-900">
+        <div className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-lg dark:border-white/10 dark:bg-elevated">
           {results.length === 0 && <p className="px-4 py-3 text-sm text-dark/40">No products found.</p>}
 
           {results.map((item) => (
@@ -140,7 +146,7 @@ export function SearchBox({
               className="flex items-center gap-3 px-4 py-2.5 transition hover:bg-background"
             >
               <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-background">
-                {item.image && <Image src={item.image} alt={item.name} width={44} height={44} className="h-full w-full object-cover" />}
+                {item.image && <Image src={item.image} alt="" width={44} height={44} className="h-full w-full object-cover" />}
               </div>
               <div className="min-w-0">
                 <p className="line-clamp-2 text-sm text-dark">{item.name}</p>

@@ -87,11 +87,10 @@ export function getSearchSuggestions(query: string) {
   return apiGet<SearchSuggestion[]>(`/api/v1/search/suggestions?q=${encodeURIComponent(query)}`);
 }
 
-/** A category's custom landing design, served by the NestJS API (not
- * Laravel). Resolves to null when the category has no live design - or when
+/** A category's custom landing design. Resolves to null when the category has no live design - or when
  * that API is unreachable - so the plain category page still renders. */
 export async function getCategoryLanding(slug: string): Promise<CategoryLanding | null> {
-  const base = process.env.NEST_API_URL ?? "http://127.0.0.1:4000";
+  const base = process.env.INTERNAL_API_URL ?? "http://127.0.0.1:4000";
   try {
     const res = await fetch(`${base}/api/v1/categories/${encodeURIComponent(slug)}/landing`, {
       headers: { Accept: "application/json" },

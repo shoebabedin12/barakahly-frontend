@@ -1,6 +1,6 @@
 "use client";
 
-import { apiPatch, apiPost } from "./api";
+import { apiDelete, apiFetch, apiPatch, apiPost } from "./api";
 import { clearGuestToken, getGuestToken, setToken } from "./auth";
 import type { Customer } from "./types";
 
@@ -70,4 +70,19 @@ export interface PasswordPayload {
 
 export function updatePassword(payload: PasswordPayload) {
   return apiPatch<{ message: string }>("/api/v1/auth/password", { ...payload });
+}
+
+export const AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
+export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+
+export async function uploadAvatar(file: File) {
+  const form = new FormData();
+  form.append("avatar", file);
+  const response = await apiFetch<{ customer: Customer }>("/api/v1/auth/avatar", { method: "POST", body: form });
+  return response.customer;
+}
+
+export async function removeAvatar() {
+  const response = await apiDelete<{ customer: Customer }>("/api/v1/auth/avatar");
+  return response.customer;
 }

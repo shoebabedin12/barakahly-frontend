@@ -24,7 +24,7 @@ export function TopSellingProductCard({ product }: { product: ProductListItem })
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group relative flex items-center gap-5 overflow-hidden rounded-2xl border border-black/10 bg-white p-5 transition hover:shadow-lg dark:border-white/10 dark:bg-white/5"
+      className="lift group relative flex items-center gap-5 overflow-hidden rounded-2xl border border-black/10 bg-white p-5 hover:shadow-lg dark:border-white/10 dark:bg-white/5"
     >
       <span className="absolute right-4 top-4 flex items-center gap-1 rounded-full bg-danger px-3 py-1 text-xs font-semibold text-white">
         <svg viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3">

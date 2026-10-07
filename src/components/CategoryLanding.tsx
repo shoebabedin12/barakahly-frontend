@@ -85,21 +85,24 @@ function HeroMedia({ landing }: { landing: CategoryLanding }) {
     );
   }
 
-  const tile = "absolute overflow-hidden rounded-3xl border-[6px] border-(--lp-bg) bg-white shadow-xl shadow-black/15";
+  const tile = "lp-tile absolute overflow-hidden rounded-3xl border-[6px] border-(--lp-bg) bg-white shadow-xl shadow-black/15";
+  // Resting tilt, entrance delay and float rhythm per tile (see .lp-tile in globals.css).
+  const motion = (rotate: string, delay: string, float: string, lift: string) =>
+    ({ "--tile-rotate": rotate, "--tile-delay": delay, "--tile-float": float, "--tile-lift": lift }) as React.CSSProperties;
 
   return (
     <div className="relative mx-auto aspect-square w-full max-w-md">
-      <div className="absolute inset-[8%] rounded-full bg-(--lp-accent) opacity-10" />
-      <div className={`${tile} left-0 top-[4%] h-[62%] w-[62%] -rotate-3`}>
+      <div className="lp-glow absolute inset-[8%] rounded-full bg-(--lp-accent) opacity-10" />
+      <div className={`${tile} left-0 top-[4%] h-[62%] w-[62%]`} style={motion("-3deg", "0s", "7s", "-10px")}>
         <Image src={first} alt="" fill priority sizes="(min-width: 1024px) 28vw, 60vw" className="object-cover" />
       </div>
       {second && (
-        <div className={`${tile} bottom-0 right-0 h-[56%] w-[56%] rotate-3`}>
+        <div className={`${tile} bottom-0 right-0 h-[56%] w-[56%]`} style={motion("3deg", "0.15s", "8s", "-12px")}>
           <Image src={second} alt="" fill sizes="(min-width: 1024px) 25vw, 55vw" className="object-cover" />
         </div>
       )}
       {third && (
-        <div className={`${tile} right-[4%] top-0 h-[34%] w-[34%] rotate-6`}>
+        <div className={`${tile} right-[4%] top-0 h-[34%] w-[34%]`} style={motion("6deg", "0.3s", "5.5s", "-8px")}>
           <Image src={third} alt="" fill sizes="(min-width: 1024px) 15vw, 35vw" className="object-cover" />
         </div>
       )}
@@ -115,7 +118,7 @@ export function CategoryLandingTop({ landing }: { landing: CategoryLanding }) {
   return (
     <div className="category-landing flex flex-col gap-10 sm:gap-14" style={themeStyle(theme)}>
       <section
-        className="relative overflow-hidden rounded-[2rem] bg-(--lp-bg)"
+        className="lp-pattern relative overflow-hidden rounded-[2rem] bg-(--lp-bg)"
         style={{ backgroundImage: patternImage(theme.pattern, theme.accent) }}
       >
         <div className="grid items-center gap-10 px-6 py-10 sm:px-12 sm:py-14 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:px-16 lg:py-16">

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { useCart } from "./CartProvider";
@@ -25,6 +25,14 @@ import type { Category, SearchSuggestion, Settings } from "@/lib/types";
 
 export function Header({ settings, categories }: { settings: Settings | null; categories: Category[] }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  // On /products?category=<slug>, the top-level category that slug belongs to
+  // (itself, or the parent of a subcategory) is the active nav item.
+  const currentSlug = pathname === "/products" ? searchParams.get("category") : null;
+  const activeCategoryId = currentSlug
+    ? (categories.find((c) => c.slug === currentSlug || c.children?.some((child) => child.slug === currentSlug))?.id ?? null)
+    : null;
+  const activeClass = (active: boolean) => (active ? "text-secondary" : "");
   const { cart, openCart } = useCart();
   const { customer, loading: authLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -33,6 +41,20 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // Publish the sticky header's height as --header-h so other sticky panels
+  // (cart / checkout summaries) can sit just below it instead of under it.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const publish = () => document.documentElement.style.setProperty("--header-h", `${el.offsetHeight}px`);
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  const searchPanelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const [openCategoryId, setOpenCategoryId] = useState<number | null>(null);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
@@ -65,6 +87,17 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
     };
   }, [categories]);
 
+  // Bring the active category into view when the nav row is scrollable.
+  useEffect(() => {
+    const nav = navScrollRef.current;
+    const active = nav?.querySelector<HTMLElement>("[data-nav-active]");
+    if (!nav || !active) return;
+    const navBox = nav.getBoundingClientRect();
+    const box = active.getBoundingClientRect();
+    const left = nav.scrollLeft + (box.left - navBox.left) - (nav.clientWidth - box.width) / 2;
+    nav.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+  }, [activeCategoryId]);
+
   function scrollNavBy(amount: number) {
     navScrollRef.current?.scrollBy({ left: amount, behavior: "smooth" });
   }
@@ -72,12 +105,20 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
   useEffect(() => {
     if (!searchOpen) return;
     function handleClickOutside(e: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (!searchRef.current?.contains(target) && !searchPanelRef.current?.contains(target)) {
         setSearchOpen(false);
       }
     }
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") setSearchOpen(false);
+    }
     document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
   }, [searchOpen]);
 
   // Close the mobile menu on navigation - adjusting state during render (rather
@@ -124,11 +165,11 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-white dark:bg-gray-900">
+    <header ref={headerRef} className="sticky top-0 z-40 bg-white dark:bg-elevated">
       <div className="h-1 bg-linear-to-r from-secondary via-secondary/40 to-secondary" />
 
       {(settings?.contact_phone || settings?.contact_email) && (
-        <div className="hidden bg-primary text-background sm:block">
+        <div className="brand-band hidden bg-primary text-background sm:block">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-2 text-xs">
             <div className="flex items-center gap-5 text-background/80">
               {settings?.contact_phone && (
@@ -185,17 +226,16 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
               <button
                 type="button"
                 onClick={() => setSearchOpen((v) => !v)}
-                className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-background dark:hover:bg-white/10"
+                aria-expanded={searchOpen}
+                aria-label="Search"
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-background dark:hover:bg-white/10 ${
+                  searchOpen ? "bg-background dark:bg-white/10" : ""
+                }`}
                 title="Search"
               >
                 <IconMagnifyingGlass className="h-5 w-5" />
               </button>
 
-              {searchOpen && (
-                <div className="absolute right-0 top-full z-40 mt-2 w-[min(90vw,26rem)] rounded-2xl border border-black/10 bg-white p-3 shadow-lg dark:border-white/10 dark:bg-gray-900">
-                  <SearchBox onNavigate={() => setSearchOpen(false)} />
-                </div>
-              )}
             </div>
 
             {!authLoading && customer ? (
@@ -205,7 +245,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                   <span className="hidden xl:inline">{customer.name.split(" ")[0]}</span>
                 </button>
                 <div className="absolute right-0 top-full z-20 hidden pt-2 group-hover:block">
-                  <div className="w-48 rounded-xl border border-black/10 bg-white py-2 shadow-lg dark:border-white/10 dark:bg-gray-900">
+                  <div className="w-48 rounded-xl border border-black/10 bg-white py-2 shadow-lg dark:border-white/10 dark:bg-elevated">
                     <p className="truncate px-4 pb-2 pt-1 text-xs font-medium text-dark/40">{customer.name}</p>
                     <Link href="/account" className="block px-4 py-2 text-sm hover:bg-background">My Account</Link>
                     <Link href="/account/orders" className="block px-4 py-2 text-sm hover:bg-background">My Orders</Link>
@@ -265,7 +305,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
       </div>
 
       {/* Row 2: category quick-links on the brand color */}
-      <div className="hidden bg-primary text-background lg:block">
+      <div className="brand-band hidden bg-primary text-background lg:block">
         <div className="relative mx-auto max-w-7xl px-5">
           {showNavLeftArrow && (
             <button
@@ -296,7 +336,9 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                   <Link
                     key={category.id}
                     href={`/products?category=${category.slug}`}
-                    className="shrink-0 transition hover:text-secondary"
+                    data-nav-active={activeCategoryId === category.id || undefined}
+                    aria-current={activeCategoryId === category.id ? "page" : undefined}
+                    className={`shrink-0 transition hover:text-secondary ${activeClass(activeCategoryId === category.id)}`}
                   >
                     {category.name}
                   </Link>
@@ -317,7 +359,9 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
                 >
                   <Link
                     href={`/products?category=${category.slug}`}
-                    className="flex items-center gap-1 transition hover:text-secondary"
+                    data-nav-active={activeCategoryId === category.id || undefined}
+                    aria-current={activeCategoryId === category.id ? "page" : undefined}
+                    className={`flex items-center gap-1 transition hover:text-secondary ${activeClass(activeCategoryId === category.id)}`}
                   >
                     {category.name}
                     <IconChevronDown className={`h-3.5 w-3.5 transition ${isOpen ? "rotate-180" : ""}`} />
@@ -325,7 +369,7 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
 
                   {isOpen && menuPos && (
                     <div className="fixed z-30" style={{ top: menuPos.top, left: menuPos.left, width: MEGA_MENU_WIDTH }}>
-                      <div className="rounded-2xl border border-black/10 bg-white text-dark shadow-xl dark:border-white/10 dark:bg-gray-900 dark:text-background">
+                      <div className="band-reset rounded-2xl border border-black/10 bg-white text-dark shadow-xl dark:border-white/10 dark:bg-elevated">
                         <div className="flex gap-8 p-6">
                           <div className="w-56 shrink-0 border-r border-black/10 pr-6 dark:border-white/10">
                             <p className="mb-1 px-2 pt-1 text-xs font-semibold uppercase tracking-wider text-dark/40">{category.name}</p>
@@ -422,7 +466,11 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
 
                   return (
                     <div key={category.id}>
-                      <div className="flex items-center gap-1 rounded-lg pr-1 text-dark/70 hover:bg-background">
+                      <div
+                        className={`flex items-center gap-1 rounded-lg pr-1 hover:bg-background ${
+                          activeCategoryId === category.id ? "bg-background font-semibold text-primary" : "text-dark/70"
+                        }`}
+                      >
                         <Link href={`/products?category=${category.slug}`} className="flex flex-1 items-center gap-3 px-2 py-2">
                           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background text-primary">
                             <IconShoppingBag className="h-4 w-4" />
@@ -486,6 +534,16 @@ export function Header({ settings, categories }: { settings: Settings | null; ca
           display: none;
         }
       `}</style>
+      {/* Mobile search: a full-width row under the header, so it never runs
+          off the side of narrow screens like an icon-anchored popover would. */}
+      {searchOpen && (
+        <div
+          ref={searchPanelRef}
+          className="absolute inset-x-0 top-full z-40 border-t border-black/10 bg-white px-4 py-3 shadow-md lg:hidden dark:border-white/10 dark:bg-elevated"
+        >
+          <SearchBox autoFocus onNavigate={() => setSearchOpen(false)} />
+        </div>
+      )}
     </header>
   );
 }

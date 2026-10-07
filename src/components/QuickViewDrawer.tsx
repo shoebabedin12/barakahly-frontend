@@ -125,7 +125,7 @@ export function QuickViewDrawer() {
         role="dialog"
         aria-modal="true"
         aria-label="Quick view"
-        className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col overflow-y-auto bg-white shadow-2xl transition-transform duration-300 dark:bg-gray-900 ${
+        className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col overflow-y-auto bg-white shadow-2xl transition-transform duration-300 dark:bg-elevated ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

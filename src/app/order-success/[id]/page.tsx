@@ -5,7 +5,9 @@ import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { IconCheckCircle } from "@/components/icons";
 import { ApiError } from "@/lib/api";
+import { getPlacedOrder } from "@/lib/checkout";
 import { getOrder } from "@/lib/queries";
+import { trackPurchase } from "@/lib/tracking";
 import type { Order } from "@/lib/types";
 
 const PAYMENT_BANNERS: Record<string, { tone: "success" | "danger"; message: string }> = {
@@ -34,8 +36,17 @@ function OrderSuccessContent() {
   useEffect(() => {
     getOrder(params.id)
       .then(setOrder)
-      .catch((err) => setError(err instanceof ApiError ? err.message : "Could not load your order."));
+      .catch((err) => {
+        const placed = getPlacedOrder(params.id);
+        if (placed) setOrder(placed);
+        else setError(err instanceof ApiError ? err.message : "Could not load your order.");
+      });
   }, [params.id]);
+
+  useEffect(() => {
+    // Online payments only count once the gateway confirmed them.
+    if (order && (order.payment_status === "paid" || !paymentState)) trackPurchase(order);
+  }, [order, paymentState]);
 
   const banner = paymentState ? PAYMENT_BANNERS[paymentState] : null;
 

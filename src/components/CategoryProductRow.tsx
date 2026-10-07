@@ -51,7 +51,7 @@ export function CategoryProductRow({
 
   return (
     <section className="mx-auto max-w-[100rem] px-3 py-6">
-      <div className="mb-4 flex items-end justify-between border-b border-black/10 pb-3 dark:border-white/10">
+      <div data-reveal className="mb-4 flex items-end justify-between border-b border-black/10 pb-3 dark:border-white/10">
         <div>
           <h2 className="text-xl font-bold text-dark">{title}</h2>
           <span className="mt-1 block h-0.5 w-8 bg-secondary" />
@@ -66,7 +66,7 @@ export function CategoryProductRow({
       </div>
 
       <div className="relative">
-        <div ref={scrollRef} className="hide-scrollbar flex gap-4 overflow-x-auto scroll-smooth pb-1">
+        <div ref={scrollRef} data-reveal-stagger className="hide-scrollbar flex gap-4 overflow-x-auto scroll-smooth pb-1 pt-1">
           {products.map((product, index) => (
             <SimpleProductCard key={product.id} product={product} badge={index === 0 ? firstItemBadge : undefined} />
           ))}
@@ -77,7 +77,7 @@ export function CategoryProductRow({
             type="button"
             onClick={() => scrollRef.current?.scrollBy({ left: ITEM_WIDTH * 2, behavior: "smooth" })}
             aria-label={`Scroll ${title} right`}
-            className="absolute right-0 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background sm:flex dark:border-white/10 dark:bg-gray-900"
+            className="absolute right-0 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background sm:flex dark:border-white/10 dark:bg-elevated"
           >
             <IconChevronDown className="h-4 w-4 -rotate-90 text-dark" />
           </button>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import { trackViewContent } from "@/lib/tracking";
 import { useCart } from "./CartProvider";
 import { addToCart } from "@/lib/cart";
 import { ApiError } from "@/lib/api";
@@ -14,6 +15,8 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
 
   useEffect(() => {
     recordRecentlyViewed(product.slug);
+    trackViewContent(product);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per product
   }, [product.slug]);
 
   const [colorId, setColorId] = useState<number | null>(product.colors[0]?.id ?? null);
@@ -125,7 +128,7 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
                   )
                 }
                 aria-label="Previous image"
-                className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-dark shadow-md transition hover:bg-white dark:bg-gray-900/90 dark:text-background"
+                className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-dark shadow-md transition hover:bg-white dark:bg-elevated/90 dark:text-background"
               >
                 <IconChevronDown className="h-4 w-4 rotate-90" />
               </button>
@@ -133,7 +136,7 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
                 type="button"
                 onClick={() => setManualImage((Math.max(activeImage, 0) + 1) % product.images.length)}
                 aria-label="Next image"
-                className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-dark shadow-md transition hover:bg-white dark:bg-gray-900/90 dark:text-background"
+                className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-dark shadow-md transition hover:bg-white dark:bg-elevated/90 dark:text-background"
               >
                 <IconChevronDown className="h-4 w-4 -rotate-90" />
               </button>
@@ -253,7 +256,7 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
           <div className="mt-8 border-t border-black/10 pt-6 text-sm leading-relaxed text-dark/80 dark:border-white/10">
             <p className="mb-2 font-semibold text-dark">Description</p>
             <div
-              className="[&_p]:mb-3 [&_a]:text-primary [&_a]:underline
+              className="rich-content [&_p]:mb-3 [&_a]:text-primary [&_a]:underline
                 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-1
                 [&_table]:mb-3 [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto [&_table]:border-collapse
                 [&_td]:border [&_td]:border-black/10 [&_td]:p-2 [&_td]:align-top dark:[&_td]:border-white/10

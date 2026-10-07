@@ -96,7 +96,7 @@ export function Footer({ settings, categories }: { settings: Settings | null; ca
   const topLevelCategories = categories.slice(0, 7);
 
   return (
-    <footer className="mt-24 bg-primary text-background">
+    <footer className="brand-band mt-24 bg-primary text-background">
       <div className="h-1 bg-linear-to-r from-secondary via-secondary/40 to-secondary" />
 
       <div className="border-b border-background/10">

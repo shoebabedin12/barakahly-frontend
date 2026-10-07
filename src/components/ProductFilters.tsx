@@ -243,7 +243,7 @@ export function ProductSortDropdown({ current }: { current: { sort?: string } })
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-40 mt-2 w-56 rounded-xl border border-black/10 bg-white p-2 shadow-lg dark:border-white/10 dark:bg-gray-900">
+        <div className="absolute left-0 top-full z-40 mt-2 w-56 rounded-xl border border-black/10 bg-white p-2 shadow-lg dark:border-white/10 dark:bg-elevated">
           {SORT_OPTIONS.map((option) => (
             <button
               key={option.value}

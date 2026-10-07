@@ -31,7 +31,7 @@ export function SimpleProductCard({
   return (
     <Link
       href={`/products/${product.slug}`}
-      className={`group relative flex flex-col overflow-hidden rounded-xl border border-black/10 bg-white p-4 transition hover:shadow-lg dark:border-white/10 dark:bg-white/5 ${
+      className={`lift group relative flex flex-col overflow-hidden rounded-xl border border-black/10 bg-white p-4 hover:shadow-lg dark:border-white/10 dark:bg-white/5 ${
         fixedWidth ? "w-50 shrink-0 sm:w-55" : "w-full"
       }`}
     >

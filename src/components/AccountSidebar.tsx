@@ -16,7 +16,21 @@ const NAV_ITEMS = [
   { href: "/account/password", label: "Change Password", icon: IconLock },
 ];
 
-export function AccountAvatar({ name, className = "" }: { name: string; className?: string }) {
+/** The customer's photo, or the first letter of their name on the brand gradient. */
+export function AccountAvatar({ name, src, className = "" }: { name: string; src?: string | null; className?: string }) {
+  // Falls back to the initial if the photo can't be loaded.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  if (src && failedSrc !== src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- small user upload, no need for the image optimizer
+      <img
+        src={src}
+        alt=""
+        onError={() => setFailedSrc(src)}
+        className={`shrink-0 rounded-full object-cover ${className}`}
+      />
+    );
+  }
   return (
     <div
       className={`flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-secondary to-primary font-bold text-white ${className}`}
@@ -50,7 +64,7 @@ export function AccountSidebar() {
     <aside className="flex flex-col gap-6 md:col-span-1">
       {customer && (
         <div className="flex items-center gap-4 rounded-sm bg-white px-6 py-5 dark:bg-white/5">
-          <AccountAvatar name={customer.name} className="h-14 w-14 text-xl" />
+          <AccountAvatar name={customer.name} src={customer.avatar} className="h-14 w-14 text-xl" />
           <div className="min-w-0">
             <p className="text-sm text-dark/60">Hello</p>
             <p className="text-lg font-bold leading-snug break-words text-dark">{customer.name}</p>

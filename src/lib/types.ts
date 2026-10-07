@@ -87,6 +87,8 @@ export interface Banner {
   image: string;
   button_text: string | null;
   button_link: string | null;
+  /** "hero" = home slider, "promo" = banners between the home sections. Older API responses omit it. */
+  position?: "hero" | "promo";
 }
 
 export interface HomeData {
@@ -205,6 +207,9 @@ export interface Settings {
   meta_description: string | null;
   flash_deal_ends_at: string | null;
   maintenance_mode: boolean;
+  facebook_pixel_id: string | null;
+  gtm_id: string | null;
+  clarity_project_id: string | null;
 }
 
 export interface Customer {
@@ -212,6 +217,8 @@ export interface Customer {
   name: string;
   phone: string;
   email: string | null;
+  /** Profile photo URL, or null to show the initial. */
+  avatar?: string | null;
   address: string | null;
   city: string | null;
   total_spent: number;

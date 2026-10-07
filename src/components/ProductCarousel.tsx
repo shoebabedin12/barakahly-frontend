@@ -40,7 +40,7 @@ export function ProductCarousel({ products }: { products: ProductListItem[] }) {
           type="button"
           onClick={() => scrollBy(-320)}
           aria-label="Scroll left"
-          className="absolute left-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background sm:flex dark:border-white/10 dark:bg-gray-900"
+          className="absolute left-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background sm:flex dark:border-white/10 dark:bg-elevated"
         >
           <IconChevronDown className="h-4 w-4 rotate-90 text-dark" />
         </button>
@@ -59,7 +59,7 @@ export function ProductCarousel({ products }: { products: ProductListItem[] }) {
           type="button"
           onClick={() => scrollBy(320)}
           aria-label="Scroll right"
-          className="absolute right-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background sm:flex dark:border-white/10 dark:bg-gray-900"
+          className="absolute right-0 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background sm:flex dark:border-white/10 dark:bg-elevated"
         >
           <IconChevronDown className="h-4 w-4 -rotate-90 text-dark" />
         </button>

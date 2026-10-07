@@ -2,9 +2,9 @@ import { getGuestToken, getToken, setGuestToken } from "./auth";
 import type { ApiErrorBody } from "./types";
 
 const SERVER_BASE_URL =
-  process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+  process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:4000";
 // Empty by default: the browser calls /api/v1/* on the storefront's own origin,
-// which next.config.ts rewrites to Laravel. Set NEXT_PUBLIC_API_URL only to
+// which next.config.ts (dev) or Nginx (production) routes to the API. Set NEXT_PUBLIC_API_URL only to
 // bypass the proxy and call the API directly.
 const BROWSER_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
@@ -26,7 +26,7 @@ interface ApiFetchOptions extends RequestInit {
 
 /**
  * Shared fetch wrapper for /api/v1/*. Works from both Server Components
- * (calls Laravel directly, server-to-server, no CORS involved) and Client
+ * (calls the API directly, server-to-server, no CORS involved) and Client
  * Components (calls the public API URL, attaches the Bearer token and/or
  * X-Guest-Token, and persists any guest_token the response echoes back).
  */
@@ -53,7 +53,13 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     }
   }
 
+  // Server-side requests never carry a customer token, so their GET responses
+  // are safe to share between visitors for a short while.
+  const method = (options.method ?? "GET").toUpperCase();
+  const cache = isServer && method === "GET" && !options.cache && !options.next ? { next: { revalidate: 30 } } : {};
+
   const response = await fetch(`${baseUrl}${path}`, {
+    ...cache,
     ...options,
     headers,
   });

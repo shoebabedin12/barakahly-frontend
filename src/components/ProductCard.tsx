@@ -78,7 +78,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
         )}
 
         {product.in_stock ? (
-          <div className="absolute inset-x-2 bottom-2 flex items-center gap-2.5 rounded-xl bg-white/95 p-1.5 pr-3 shadow-lg backdrop-blur dark:bg-gray-900/90">
+          <div className="absolute inset-x-2 bottom-2 flex items-center gap-2.5 rounded-xl bg-white/95 p-1.5 pr-3 shadow-lg backdrop-blur dark:bg-elevated/90">
             <button
               type="button"
               onClick={handleQuickViewClick}
@@ -86,7 +86,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
               className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-background shadow-md transition hover:scale-110 hover:shadow-lg active:scale-95"
             >
               <IconShoppingBag className="h-4.5 w-4.5" />
-              <span className="absolute -right-1 -top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-danger text-white ring-2 ring-white dark:ring-gray-900">
+              <span className="absolute -right-1 -top-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-danger text-white ring-2 ring-white dark:ring-elevated">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="h-2.5 w-2.5">
                   <path strokeLinecap="round" d="M12 5v14M5 12h14" />
                 </svg>
@@ -98,7 +98,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
             </span>
           </div>
         ) : (
-          <div className="absolute inset-x-2 bottom-2 flex items-center justify-center gap-1.5 rounded-xl bg-white/95 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-dark/70 shadow-lg backdrop-blur dark:bg-gray-900/90">
+          <div className="absolute inset-x-2 bottom-2 flex items-center justify-center gap-1.5 rounded-xl bg-white/95 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-dark/70 shadow-lg backdrop-blur dark:bg-elevated/90">
             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-danger" />
             Out of Stock
           </div>

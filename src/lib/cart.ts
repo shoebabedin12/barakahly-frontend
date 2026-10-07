@@ -1,18 +1,21 @@
 "use client";
 
 import { apiDelete, apiGet, apiPatch, apiPost } from "./api";
+import { trackAddToCart } from "./tracking";
 import type { CartResponse } from "./types";
 
 export function getCart() {
   return apiGet<CartResponse>("/api/v1/cart");
 }
 
-export function addToCart(productId: number, variantId?: number | null, quantity = 1) {
-  return apiPost<CartResponse>("/api/v1/cart/items", {
+export async function addToCart(productId: number, variantId?: number | null, quantity = 1) {
+  const cart = await apiPost<CartResponse>("/api/v1/cart/items", {
     product_id: productId,
     variant_id: variantId ?? undefined,
     quantity,
   });
+  trackAddToCart(cart, productId, variantId, quantity);
+  return cart;
 }
 
 export function updateCartItem(cartItemId: number, quantity: number) {

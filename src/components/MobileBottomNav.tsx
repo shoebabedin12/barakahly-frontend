@@ -26,7 +26,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-black/10 bg-white sm:hidden dark:border-white/10 dark:bg-gray-900"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-black/10 bg-white sm:hidden dark:border-white/10 dark:bg-elevated"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="grid grid-cols-4">

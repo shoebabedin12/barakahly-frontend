@@ -9,6 +9,8 @@
   --color-dark: #1B1B1B;
   --color-success: #16A34A;
   --color-danger: #DC2626;
+  /* Raised surfaces: header, dropdowns, drawers. */
+  --color-elevated: #FFFFFF;
 }
 
 .dark {
@@ -18,6 +20,22 @@
   --color-dark: #F3F1EA;
   --color-success: #22C55E;
   --color-danger: #F87171;
+  --color-elevated: #262420;
+}
+
+/* Brand-coloured bands (top bar, category nav, footer). In dark mode they
+   stay a deep green with light text instead of the brighter green used for
+   buttons, so they don't glare or turn their text dark. */
+.dark .brand-band {
+  --color-primary: #12382B;
+  --color-background: #F3F1EA;
+}
+
+/* Popovers rendered inside a band (the category mega menu) use the normal
+   dark palette again. */
+.dark .brand-band .band-reset {
+  --color-primary: #2E9469;
+  --color-background: #1C1B18;
 }
 
 html.dark {
@@ -39,4 +57,186 @@ body {
 .dark .category-landing {
   --lp-bg: color-mix(in srgb, var(--lp-accent) 20%, #171612);
   --lp-heading: color-mix(in srgb, var(--lp-accent) 30%, #f3f1ea);
+}
+
+/* Landing hero collage: tiles rise in one after another, then drift gently
+   out of step with each other; hovering one straightens and lifts it. Each
+   tile's resting tilt comes from --tile-rotate so the motion keeps it. */
+@keyframes lp-tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) rotate(var(--tile-rotate)) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--tile-rotate)) scale(1);
+  }
+}
+
+@keyframes lp-tile-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--tile-rotate));
+  }
+  50% {
+    transform: translateY(var(--tile-lift, -10px)) rotate(calc(var(--tile-rotate) * 0.6));
+  }
+}
+
+@keyframes lp-glow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.1;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.16;
+  }
+}
+
+@keyframes lp-pattern-drift {
+  to {
+    background-position: 240px 120px;
+  }
+}
+
+.lp-tile {
+  transform: rotate(var(--tile-rotate));
+  animation:
+    lp-tile-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--tile-delay, 0s) both,
+    lp-tile-float var(--tile-float, 6s) ease-in-out calc(var(--tile-delay, 0s) + 0.7s) infinite;
+  transition:
+    box-shadow 0.3s ease,
+    scale 0.3s ease;
+}
+
+.lp-tile:hover {
+  animation-play-state: paused;
+  scale: 1.04;
+  z-index: 10;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+.lp-glow {
+  animation: lp-glow 7s ease-in-out infinite;
+}
+
+.lp-pattern {
+  animation: lp-pattern-drift 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-tile,
+  .lp-glow,
+  .lp-pattern {
+    animation: none;
+  }
+}
+
+/* Admin-written rich text (product descriptions). Text pasted from other
+   sites carries inline colours and white highlights - drop them so it reads
+   in both themes - and WordPress-style emoji images arrive without a size,
+   so keep them at text size. */
+.rich-content :where(p, span, strong, b, em, i, u, h1, h2, h3, h4, h5, h6, li, td, th, div, font) {
+  color: inherit !important;
+  background-color: transparent !important;
+}
+
+.rich-content img.emoji,
+.rich-content img[src*="/emoji/"] {
+  display: inline-block;
+  width: 1.15em !important;
+  height: 1.15em !important;
+  margin: 0 0.1em !important;
+  vertical-align: -0.2em;
+  border-radius: 0 !important;
+}
+
+/* Scroll reveal. Elements marked data-reveal (or the children of
+   data-reveal-stagger) start hidden only once ScrollReveal has put
+   `reveal-ready` on <html>, so without JavaScript - or for crawlers -
+   everything is simply visible. Whatever is already on screen at load is
+   marked visible first, so nothing above the fold flickers. */
+.reveal-ready [data-reveal]:not(.is-visible),
+.reveal-ready [data-reveal-stagger]:not(.is-visible) > * {
+  opacity: 0;
+  transform: translateY(26px);
+}
+
+.reveal-ready [data-reveal],
+.reveal-ready [data-reveal-stagger] > * {
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-ready [data-reveal-stagger].is-visible > * {
+  transition-delay: calc(min(var(--i, 0), 8) * 70ms);
+}
+
+/* Hero: the active slide drifts in slowly while it's on screen. */
+@keyframes hero-drift {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+
+.hero-active img {
+  animation: hero-drift 7s ease-out both;
+}
+
+/* Hover life for cards and category circles on the home page. */
+.lift {
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s ease;
+}
+
+.lift:hover {
+  transform: translateY(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-ready [data-reveal]:not(.is-visible),
+  .reveal-ready [data-reveal-stagger]:not(.is-visible) > * {
+    opacity: 1;
+    transform: none;
+  }
+  .hero-active img,
+  .lift:hover {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* Side panels that follow the page on large screens (cart and checkout
+   summaries): they stop just below the sticky header and scroll inside
+   themselves if they're taller than the space left. */
+.sticky-below-header {
+  position: sticky;
+  top: calc(var(--header-h, 9.5rem) + 1rem);
+  max-height: calc(100vh - var(--header-h, 9.5rem) - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 1023px) {
+  .sticky-below-header {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+/* Scrollable rows (category nav, carousels) scroll by touch/arrows without a visible bar. */
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }

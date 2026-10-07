@@ -15,21 +15,21 @@ export function CategoryCarousel({ categories }: { categories: Category[] }) {
 
   return (
     <div className="relative">
-      <div ref={scrollRef} className="hide-scrollbar flex gap-6 overflow-x-auto scroll-smooth pb-2">
+      <div ref={scrollRef} data-reveal-stagger className="hide-scrollbar flex gap-6 overflow-x-auto scroll-smooth pb-2 pt-1">
         {categories.map((category) => (
           <Link
             key={category.id}
             href={`/products?category=${category.slug}`}
             className="group flex w-28 shrink-0 flex-col items-center gap-3 text-center sm:w-36"
           >
-            <div className="relative h-28 w-28 overflow-hidden rounded-full bg-black/5 transition group-hover:opacity-90 sm:h-36 sm:w-36 dark:bg-white/5">
+            <div className="relative h-28 w-28 overflow-hidden rounded-full bg-black/5 ring-secondary/0 transition duration-300 group-hover:-translate-y-1 group-hover:shadow-lg group-hover:ring-4 group-hover:ring-secondary/40 sm:h-36 sm:w-36 dark:bg-white/5">
               {category.cover_image && (
                 <Image
                   src={category.cover_image}
                   alt={category.name}
                   fill
                   sizes="144px"
-                  className="object-cover"
+                  className="object-cover transition duration-500 group-hover:scale-110"
                 />
               )}
             </div>
@@ -42,7 +42,7 @@ export function CategoryCarousel({ categories }: { categories: Category[] }) {
         type="button"
         onClick={() => scrollBy(320)}
         aria-label="Scroll categories right"
-        className="absolute right-0 top-12 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background sm:flex dark:border-white/10 dark:bg-gray-900"
+        className="absolute right-0 top-12 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background sm:flex dark:border-white/10 dark:bg-elevated"
       >
         <IconChevronDown className="h-4 w-4 -rotate-90 text-dark" />
       </button>

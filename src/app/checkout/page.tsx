@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { trackInitiateCheckout } from "@/lib/tracking";
 import { useAuth } from "@/components/AuthProvider";
 import { useCart } from "@/components/CartProvider";
 import { IconChevronDown } from "@/components/icons";
@@ -60,6 +61,12 @@ function CheckoutForm() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const cartReady = Boolean(cart) && !cartLoading;
+  useEffect(() => {
+    if (cartReady && cart) trackInitiateCheckout(cart);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, when the cart first loads
+  }, [cartReady]);
 
   useEffect(() => {
     getCheckoutOptions().then((data) => {
@@ -485,7 +492,7 @@ function CheckoutForm() {
         </div>
 
         <div className="lg:col-span-1">
-          <div className="sticky top-24 flex flex-col gap-4">
+          <div className="sticky-below-header hide-scrollbar flex flex-col gap-4">
             <div className="rounded-xl border border-black/10 p-4 text-sm dark:border-white/10">
               <h2 className="mb-3 font-semibold text-dark">Order Summary</h2>
               <div className="flex items-center justify-between">
