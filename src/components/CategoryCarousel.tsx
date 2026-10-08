@@ -4,18 +4,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 import type { Category } from "@/lib/types";
-import { IconChevronDown } from "./icons";
+import { CarouselArrows, CarouselDots } from "./CarouselControls";
+import { useScrollPager } from "./useScrollPager";
 
 export function CategoryCarousel({ categories }: { categories: Category[] }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  function scrollBy(amount: number) {
-    scrollRef.current?.scrollBy({ left: amount, behavior: "smooth" });
-  }
+  const rowRef = useRef<HTMLDivElement>(null);
+  const pager = useScrollPager(rowRef, categories.length);
 
   return (
     <div className="relative">
-      <div ref={scrollRef} data-reveal-stagger className="hide-scrollbar flex gap-6 overflow-x-auto scroll-smooth pb-2 pt-1">
+      <div
+        ref={rowRef}
+        data-reveal-stagger
+        className="hide-scrollbar flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-2 pt-1 [&>*]:snap-start"
+      >
         {categories.map((category) => (
           <Link
             key={category.id}
@@ -38,24 +40,17 @@ export function CategoryCarousel({ categories }: { categories: Category[] }) {
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={() => scrollBy(320)}
-        aria-label="Scroll categories right"
-        className="absolute right-0 top-12 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-black/10 bg-white shadow-md transition hover:bg-background sm:flex dark:border-white/10 dark:bg-elevated"
-      >
-        <IconChevronDown className="h-4 w-4 -rotate-90 text-dark" />
-      </button>
+      <CarouselArrows
+        label="categories"
+        canPrev={pager.canPrev}
+        canNext={pager.canNext}
+        onPrev={pager.prev}
+        onNext={pager.next}
+        top="top-14 sm:top-[4.5rem]"
+      />
 
-      <style>{`
-        .hide-scrollbar {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
+      <CarouselDots label="Categories" page={pager.page} pageCount={pager.pageCount} onSelect={pager.goTo} />
+
     </div>
   );
 }
