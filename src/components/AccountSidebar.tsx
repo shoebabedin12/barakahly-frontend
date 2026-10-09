@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: "/account/orders", label: "My Orders", icon: IconShoppingBag },
   { href: "/account/wishlist", label: "My Wishlist", icon: IconHeart },
   { href: "/account/password", label: "Change Password", icon: IconLock },
+  { href: "/account/delete", label: "Delete Account", icon: IconLock },
 ];
 
 /** The customer's photo, or the first letter of their name on the brand gradient. */
