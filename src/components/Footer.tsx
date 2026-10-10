@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AppQrCode } from "./AppQrCode";
 import { getCheckoutOptions } from "@/lib/queries";
 import { ApiError } from "@/lib/api";
 import { subscribeNewsletter } from "@/lib/site";
@@ -230,14 +231,27 @@ export function Footer({ settings, categories }: { settings: Settings | null; ca
           ]}
         />
 
-        <FooterColumn
-          title="Consumer Policy"
-          links={[
-            { label: "Refund Policy", href: "/refund-policy" },
-            { label: "Terms & Conditions", href: "/terms-and-conditions" },
-            { label: "Privacy Policy", href: "/privacy-policy" },
-          ]}
-        />
+        <div className="flex flex-col gap-8">
+          <FooterColumn
+            title="Consumer Policy"
+            links={[
+              { label: "Refund Policy", href: "/refund-policy" },
+              { label: "Terms & Conditions", href: "/terms-and-conditions" },
+              { label: "Privacy Policy", href: "/privacy-policy" },
+            ]}
+          />
+
+          <div>
+            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-background/50">Get the App</h4>
+            <Link href="/app" className="group flex items-center gap-3">
+              <AppQrCode size={72} className="hidden sm:block" />
+              <span className="text-sm text-background/80 transition group-hover:text-secondary">
+                <span className="hidden sm:inline">Scan with your phone, or </span>
+                <span className="font-semibold underline-offset-4 group-hover:underline">download for Android</span>
+              </span>
+            </Link>
+          </div>
+        </div>
       </div>
 
       {paymentMethods.length > 0 && (

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { AppQrCode } from "@/components/AppQrCode";
 
 export const metadata: Metadata = {
   title: "Barakahly App for Android",
@@ -35,6 +36,17 @@ export default function AppPage() {
           Download the app (APK, 89 MB)
         </a>
         <p className="text-xs text-dark/40">Version 1.0.0 · Android 7.0 or newer · Google Play and App Store coming soon</p>
+
+        {/* On a computer: scan to open this page on the phone. */}
+        <div className="mt-4 hidden items-center gap-5 rounded-2xl border border-black/10 bg-white p-5 text-left sm:flex dark:border-white/10 dark:bg-white/5">
+          <AppQrCode size={140} />
+          <div>
+            <p className="font-bold text-dark">On your computer?</p>
+            <p className="mt-1 max-w-xs text-sm text-dark/60">
+              Point your phone&apos;s camera at the code to open this page there, then tap Download.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="mt-12 grid gap-6 sm:grid-cols-2">
